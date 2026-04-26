@@ -237,7 +237,11 @@ const PARTNER_CONTEXT = "KNOWN PARTNER ECOSYSTEM (real companies transacting wit
 
 
 // Init
-document.getElementById('customer-chips').innerHTML=CUSTOMERS.map(c=>`<span class="customer-chip" onclick="openCustomerModal('${c}')">${c}</span>`).join('');
+document.getElementById('customer-chips').innerHTML=CUSTOMERS.map(c=>{
+  const hasFX = CUSTOMER_PROFILES[c] && CUSTOMER_PROFILES[c].fx_signals && CUSTOMER_PROFILES[c].fx_signals.length > 0;
+  const badge = hasFX ? `<span style="display:inline-block;background:#4B6EF5;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:20px;margin-left:5px;font-family:'DM Mono',monospace;vertical-align:middle;letter-spacing:.03em">FX</span>` : '';
+  return `<span class="customer-chip" onclick="openCustomerModal('${c}')">${c}${badge}</span>`;
+}).join('');
 document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
 
