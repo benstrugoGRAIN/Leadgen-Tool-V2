@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-const DB_PATH = path.join(__dirname, 'feedback.json');
+const DB_PATH = process.env.DB_PATH || '/data/feedback.json';
 
 // Initialize feedback DB
 if (!fs.existsSync(DB_PATH)) {
