@@ -93,6 +93,21 @@ header{margin-bottom:40px}
 .sug{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
 .sug:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
 
+.card-chat{margin-top:12px;border-top:1px solid var(--border);padding-top:12px;display:none}
+.card-chat.open{display:block}
+.card-chat-msgs{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;max-height:200px;overflow-y:auto}
+.card-bubble{font-size:12px;line-height:1.55;padding:7px 11px;border-radius:8px;max-width:95%;word-wrap:break-word}
+.card-bubble.ai{background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+.card-bubble.user{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.15);color:var(--text);align-self:flex-end}
+.card-bubble.thinking{color:var(--muted);font-size:11px;font-family:"DM Mono",monospace;animation:pulse 1s ease-in-out infinite alternate;background:none;border:none}
+.card-chat-input-row{display:flex;gap:6px}
+.card-chat-input{flex:1;padding:7px 10px;font-size:12px;border:1px solid var(--border2);border-radius:6px;background:var(--surface2);color:var(--text);font-family:"DM Sans",sans-serif;outline:none}
+.card-chat-input:focus{border-color:rgba(0,229,160,0.35)}
+.card-chat-input::placeholder{color:var(--muted)}
+.card-ask-btn{padding:7px 12px;font-size:12px;background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.2);color:var(--accent);border-radius:6px;cursor:pointer;font-family:"DM Sans",sans-serif;white-space:nowrap}
+.card-ask-btn:disabled{opacity:.4;cursor:not-allowed}
+.card-chat-toggle{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 9px;cursor:pointer;font-family:"DM Mono",monospace;transition:.15s}
+.card-chat-toggle:hover{color:var(--accent);border-color:rgba(0,229,160,0.3)}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 18px;font-size:13px;opacity:0;transition:.2s;z-index:500;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(0,229,160,0.3);color:var(--accent)}
@@ -276,6 +291,16 @@ function renderResults(profile,leads,isFirst){
         <input class="note-input" id="note-${sid}" type="text" placeholder="Add a note..." value="${fb?.note||''}"/>
         <button class="save-btn" onclick="saveNote('${lead.name}','${lead.domain||''}','${sid}')">Save</button>
         ${lead.domain?`<button class="rating-btn" onclick="window.open('https://${lead.domain}','_blank')">↗</button>`:''}
+        <button class="card-chat-toggle" onclick="toggleCardChat('${sid}')">✦ Ask AI</button>
+      </div>
+      <div class="card-chat" id="card-chat-${sid}">
+        <div class="card-chat-msgs" id="card-chat-msgs-${sid}"></div>
+        <div class="card-chat-input-row">
+          <input class="card-chat-input" id="card-chat-input-${sid}" type="text" placeholder="Ask about ${lead.name}..." 
+            onkeydown="if(event.key==='Enter')sendCardChat('${sid}',${JSON.stringify(lead).replace(/'/g,"&#39;").replace(/"/g,'&quot;')})"/>
+          <button class="card-ask-btn" id="card-ask-btn-${sid}" 
+            onclick="sendCardChat('${sid}',${JSON.stringify(lead).replace(/'/g,"&#39;").replace(/"/g,'&quot;')})">Ask</button>
+        </div>
       </div>
     </div>`;
   });
@@ -394,6 +419,91 @@ You can answer ANY question — company research, industry analysis, market stra
   }catch(e){thinking.querySelector('.bubble').textContent='Error: '+e.message;}
   finally{document.getElementById('chat-send').disabled=false;}
   document.getElementById('chat-messages').scrollTop=9999;
+}
+
+
+const cardChatHistory = {};
+
+function toggleCardChat(sid) {
+  const el = document.getElementById('card-chat-' + sid);
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) {
+    const msgs = document.getElementById('card-chat-msgs-' + sid);
+    if (!msgs.children.length) {
+      // Show welcome message
+      const div = document.createElement('div');
+      div.className = 'card-bubble ai';
+      div.textContent = 'Ask me anything about this company — contacts, news, tech stack, why they need FX, how to approach them...';
+      msgs.appendChild(div);
+    }
+    document.getElementById('card-chat-input-' + sid)?.focus();
+  }
+}
+
+async function sendCardChat(sid, lead) {
+  const input = document.getElementById('card-chat-input-' + sid);
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+
+  const msgs = document.getElementById('card-chat-msgs-' + sid);
+  const btn = document.getElementById('card-ask-btn-' + sid);
+
+  // Add user message
+  const userDiv = document.createElement('div');
+  userDiv.className = 'card-bubble user';
+  userDiv.textContent = q;
+  msgs.appendChild(userDiv);
+
+  // Add thinking
+  const thinkDiv = document.createElement('div');
+  thinkDiv.className = 'card-bubble thinking';
+  thinkDiv.textContent = 'Thinking...';
+  msgs.appendChild(thinkDiv);
+  msgs.scrollTop = msgs.scrollHeight;
+  btn.disabled = true;
+
+  if (!cardChatHistory[sid]) cardChatHistory[sid] = [];
+  cardChatHistory[sid].push({ role: 'user', content: q });
+
+  const sys = `You are a B2B sales intelligence assistant. The user is researching a specific company as a potential lead.
+
+COMPANY BEING RESEARCHED:
+- Name: ${lead.name}
+- Domain: ${lead.domain || 'unknown'}
+- HQ: ${lead.hq || 'unknown'}
+- Why it's a good lookalike: ${lead.why_similar || 'similar to searched company'}
+- Fit score: ${lead.fit_score || 'unknown'}/99
+
+CONTEXT:
+- This lead was found when searching for lookalikes of: ${currentCompany}
+- User's existing customers: ${CUSTOMERS.join(', ')}
+
+Answer the user's question about ${lead.name} specifically. Use your full AI knowledge — you can research contacts, news, business model, tech stack, market position, FX needs, how to approach them, etc. Be specific and actionable.`;
+
+  try {
+    const r = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        system: sys,
+        messages: cardChatHistory[sid]
+      })
+    });
+    const d = await r.json();
+    const reply = (d.content || []).find(b => b.type === 'text')?.text || 'Sorry, no response.';
+    cardChatHistory[sid].push({ role: 'assistant', content: reply });
+    thinkDiv.className = 'card-bubble ai';
+    thinkDiv.innerHTML = reply.replace(/\n/g, '<br>');
+  } catch(e) {
+    thinkDiv.className = 'card-bubble ai';
+    thinkDiv.textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
 }
 
 let toastTimer;
