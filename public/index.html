@@ -168,7 +168,7 @@ header{margin-bottom:40px}
 <div class="toast" id="toast"></div>
 
 <script>
-const CUSTOMERS=["12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba","Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation","American International Executive","Bedsopia","Damisa","Dubai Link","Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo"];
+const CUSTOMERS=["12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba","Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation","American International Executive","Bedsopia","Damisa","Dubai Link","Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo","Weski"];
 
 let currentCompany='', currentResults=[], allFeedback=[], hubspotContext='', chatHistory=[];
 
@@ -237,7 +237,7 @@ async function doSearch(loadMore=false){
 
     // Step 2: Haiku finds lookalikes
     const fbCtx=buildFeedbackCtx();
-    const lookalikesPrompt=`Find 8 real lookalike companies to "${profile.name}".\n\nPROFILE:\n- ${profile.description}\n- Segment: ${profile.segment}\n- Key traits: ${profile.key_traits.join('; ')}\n- Look for: ${profile.what_to_look_for}\n${fbCtx}${hubspotContext}${alreadyFound.length?'\nDo NOT repeat: '+alreadyFound.join(', '):''}\n\nRules: real companies only, growth-stage/mid-market, not "${profile.name}" itself.\n\nReturn ONLY valid JSON array:\n[{"name":"","domain":"","hq":"City, Country","why_similar":"2 sentences specifically how they match","fit_score":0}]`;
+    const lookalikesPrompt=`Find 8 real lookalike companies to "${profile.name}".\n\nPROFILE:\n- ${profile.description}\n- Segment: ${profile.segment}\n- Key traits: ${profile.key_traits.join('; ')}\n- Look for: ${profile.what_to_look_for}\n${fbCtx}${hubspotContext}${alreadyFound.length?'\nDo NOT repeat: '+alreadyFound.join(', '):''}\n\nRules: real companies only, growth-stage/mid-market, not "${profile.name}" itself.\n\nFIT SCORE GUIDE (be realistic and varied, do not cluster scores):\n- 90-99: Nearly identical business model, same segment, same size, same cross-border profile\n- 75-89: Very similar model with minor differences in geography or size\n- 60-74: Same broad category but meaningful differences\n- 45-59: Relevant but weaker match\n\nReturn ONLY valid JSON array:\n[{"name":"","domain":"","hq":"City, Country","why_similar":"2 sentences specifically how they match the profile traits","fit_score":75}]`;
     const r2=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:lookalikesPrompt}]})});
     const d2=await r2.json();
     const text2=(d2.content||[]).find(b=>b.type==='text')?.text||'';
