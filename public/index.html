@@ -6,128 +6,96 @@
 <title>Lead Finder</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-:root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c22;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#eef0f4;--muted:#7a8394;--accent:#00e5a0;--accent2:#0077ff;--danger:#ff4d4d;--gold:#f5c842;--green:#00e5a0;--red:#ff4d4d;--radius:10px;--radius-lg:16px}
+:root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c22;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#eef0f4;--muted:#7a8394;--accent:#00e5a0;--accent2:#0077ff;--danger:#ff4d4d;--gold:#f5c842;--radius:10px;--radius-lg:16px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,160,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
-.app{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:40px 24px}
-
-/* Header */
-header{margin-bottom:48px}
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 24px}
+header{margin-bottom:40px}
 .logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.03em;margin-bottom:6px}
 .logo span{color:var(--accent)}
 .subtitle{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace}
-
-/* Search box */
+.hs-bar{margin-top:10px;font-size:11px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .search-wrap{margin-bottom:40px}
 .search-label{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.search-box{display:flex;gap:10px;align-items:stretch}
+.search-box{display:flex;gap:10px}
 .search-input{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px 20px;font-size:16px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
 .search-input:focus{border-color:rgba(0,229,160,0.5);box-shadow:0 0 0 3px rgba(0,229,160,0.08)}
 .search-input::placeholder{color:var(--muted)}
 .search-btn{background:var(--accent);color:#000;border:none;border-radius:var(--radius-lg);padding:16px 28px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:.15s;white-space:nowrap}
 .search-btn:hover{background:#00ffb3}
 .search-btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* Customer chips */
-.customers-wrap{margin-bottom:8px}
-.customers-label{font-size:11px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
+.customers-label{font-size:11px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-top:14px}
 .customer-chips{display:flex;flex-wrap:wrap;gap:6px}
 .customer-chip{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;transition:.15s;background:transparent;font-family:'DM Sans',sans-serif}
 .customer-chip:hover{border-color:rgba(0,229,160,0.4);color:var(--accent)}
-
-/* Results */
-.results-section{margin-top:8px}
-.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
-.results-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:600}
-.results-title span{color:var(--accent)}
-.results-meta{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
-
-/* Reasoning box */
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:12px;transition:.2s;position:relative;overflow:hidden}
+.result-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;opacity:0;transition:.2s;background:var(--accent)}
+.result-card:hover::before{opacity:1}
+.result-card.rated-good::before{opacity:1;background:var(--accent)}
+.result-card.rated-bad::before{opacity:1;background:var(--danger)}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.rc-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:600}
+.rc-domain{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:3px}
+.rc-score{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;color:var(--accent);line-height:1;text-align:right}
+.rc-score-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.rc-why{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.score-bar{height:2px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;margin-bottom:16px}
+.score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.feedback-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rating-btn{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid var(--border2);cursor:pointer;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:.15s}
+.rating-btn:hover{color:var(--text)}
+.rating-btn.good.active{background:rgba(0,229,160,0.12);border-color:rgba(0,229,160,0.35);color:var(--accent)}
+.rating-btn.bad.active{background:rgba(255,77,77,0.1);border-color:rgba(255,77,77,0.3);color:var(--danger)}
+.status-select{padding:5px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none}
+.note-input{flex:1;min-width:120px;padding:5px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;outline:none}
+.note-input::placeholder{color:var(--muted)}
+.save-btn{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid rgba(0,229,160,0.25);background:rgba(0,229,160,0.06);color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif}
 .reasoning-box{background:var(--surface);border:1px solid rgba(0,229,160,0.15);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px}
 .reasoning-label{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
 .reasoning-text{font-size:13px;color:var(--muted);line-height:1.7}
-.similar-to{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sim-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .sim-chip{font-size:11px;padding:3px 9px;border-radius:4px;background:rgba(0,229,160,0.08);color:var(--accent);border:1px solid rgba(0,229,160,0.2)}
-
-/* Lead card */
-.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:12px;transition:.2s;position:relative;overflow:hidden}
-.lead-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;opacity:0;transition:.2s}
-.lead-card:hover{border-color:var(--border2)}
-.lead-card:hover::before{opacity:1;background:var(--accent)}
-.lead-card.rated-good::before{opacity:1;background:var(--green)}
-.lead-card.rated-bad::before{opacity:1;background:var(--red)}
-.lead-card.rated-good{border-color:rgba(0,229,160,0.2)}
-.lead-card.rated-bad{border-color:rgba(255,77,77,0.15)}
-
-.lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
-.lead-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:600}
-.lead-domain{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:3px}
-.lead-score{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;color:var(--accent);line-height:1;text-align:right;flex-shrink:0}
-.lead-score-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
-
-.lead-why{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px}
-.lead-similarity{font-size:12px;color:var(--text);margin-bottom:14px;line-height:1.6}
-.lead-similarity strong{color:var(--accent);font-weight:500}
-
-.score-bar{height:2px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;margin-bottom:16px}
-.score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
-
-/* Feedback row */
-.feedback-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.rating-btns{display:flex;gap:6px}
-.rating-btn{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid var(--border2);cursor:pointer;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:.15s;display:flex;align-items:center;gap:5px}
-.rating-btn:hover{border-color:var(--border2);color:var(--text)}
-.rating-btn.good.active{background:rgba(0,229,160,0.12);border-color:rgba(0,229,160,0.35);color:var(--green)}
-.rating-btn.bad.active{background:rgba(255,77,77,0.1);border-color:rgba(255,77,77,0.3);color:var(--red)}
-
-.status-select{padding:5px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none}
-.status-select:focus{border-color:rgba(0,229,160,0.3)}
-
-.note-wrap{flex:1;min-width:150px}
-.note-input{width:100%;padding:5px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:.15s}
-.note-input:focus{border-color:rgba(0,229,160,0.3)}
-.note-input::placeholder{color:var(--muted)}
-
-.save-note-btn{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid rgba(0,229,160,0.25);background:rgba(0,229,160,0.06);color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
-.save-note-btn:hover{background:rgba(0,229,160,0.14)}
-
-/* Load more */
-.load-more-wrap{text-align:center;margin-top:20px}
-.load-more-btn{padding:11px 32px;font-size:13px;border-radius:var(--radius-lg);border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.load-more-btn{width:100%;padding:11px;font-size:13px;border-radius:var(--radius-lg);border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s;margin-top:8px}
 .load-more-btn:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
 .load-more-btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* Loading */
-.loading{display:flex;flex-direction:column;gap:16px;padding:40px 0}
-.loading-step{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted);opacity:.3;transition:opacity .3s}
-.loading-step.active{opacity:1;color:var(--text)}
-.loading-step.done{opacity:.5;color:var(--accent)}
-.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:.3s}
-.loading-step.active .step-dot{background:var(--accent);box-shadow:0 0 8px rgba(0,229,160,0.6);animation:pulse .8s ease-in-out infinite alternate}
-.loading-step.done .step-dot{background:var(--accent)}
+.loading{display:flex;flex-direction:column;gap:14px;padding:40px 0}
+.load-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);opacity:.3;transition:opacity .3s}
+.load-step.active{opacity:1;color:var(--text)}
+.load-step.done{opacity:.5;color:var(--accent)}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.load-step.active .step-dot{background:var(--accent);box-shadow:0 0 8px rgba(0,229,160,0.6);animation:pulse .8s ease-in-out infinite alternate}
+.load-step.done .step-dot{background:var(--accent)}
 @keyframes pulse{from{opacity:.5}to{opacity:1}}
 
-/* Empty / error */
-.empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.empty-icon{font-size:32px;margin-bottom:12px}
-.empty-title{font-family:'Syne',sans-serif;font-size:15px;color:var(--text);margin-bottom:6px}
-.empty-sub{font-size:13px;line-height:1.6}
-.error-msg{color:var(--danger);font-size:13px;padding:16px;background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.15);border-radius:var(--radius);margin-top:16px}
+/* Floating chat */
+#chat-fab{position:fixed;bottom:28px;right:28px;width:54px;height:54px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,229,160,0.35);z-index:400;transition:.2s}
+#chat-fab:hover{transform:scale(1.08)}
+#chat-drawer{position:fixed;bottom:96px;right:28px;width:360px;border-radius:var(--radius-lg);background:var(--surface);border:1px solid var(--border2);box-shadow:0 8px 40px rgba(0,0,0,0.5);z-index:399;display:none;flex-direction:column;overflow:hidden;max-height:520px}
+#chat-drawer.open{display:flex}
+.chat-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.chat-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600}
+.chat-subtitle{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:1px}
+#chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;max-height:340px}
+.msg{display:flex;flex-direction:column}
+.bubble{font-size:13px;line-height:1.6;padding:10px 13px;border-radius:12px;max-width:95%;word-wrap:break-word}
+.bubble.ai{background:var(--surface2);border:1px solid var(--border);border-radius:4px 12px 12px 12px;color:var(--text)}
+.bubble.user{background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.2);border-radius:12px 4px 12px 12px;align-self:flex-end;color:var(--text)}
+.bubble.thinking{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;background:none;border:none;padding:4px 0;animation:pulse 1s ease-in-out infinite alternate}
+.chat-footer{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0}
+.chat-input-row{display:flex;gap:8px;margin-bottom:8px}
+#chat-input{flex:1;padding:8px 12px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;outline:none}
+#chat-input:focus{border-color:rgba(0,229,160,0.35)}
+#chat-input::placeholder{color:var(--muted)}
+#chat-send{padding:8px 14px;background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif}
+#chat-send:disabled{opacity:.4;cursor:not-allowed}
+.suggestions{display:flex;flex-wrap:wrap;gap:5px}
+.sug{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
+.sug:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
 
-/* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 18px;font-size:13px;opacity:0;transition:.2s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 18px;font-size:13px;opacity:0;transition:.2s;z-index:500;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(0,229,160,0.3);color:var(--accent)}
-
-.chat-msg{display:flex;flex-direction:column;gap:2px}
-.msg-bubble{font-size:13px;line-height:1.6;padding:10px 14px;border-radius:12px;max-width:100%;word-wrap:break-word}
-.assistant-bubble{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px 12px 12px 12px}
-.user-bubble{background:rgba(0,229,160,0.1);color:var(--text);border:1px solid rgba(0,229,160,0.2);border-radius:12px 4px 12px 12px;align-self:flex-end}
-.user-msg{align-items:flex-end}
-.msg-thinking{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;padding:8px 0;animation:pulse 1s ease-in-out infinite alternate}
-.suggestion-chip{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
-.suggestion-chip:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 </style>
@@ -137,591 +105,284 @@ header{margin-bottom:48px}
   <header>
     <div class="logo">Lead<span>Finder</span></div>
     <div class="subtitle">Type any company · find who looks like them</div>
-  <div id="hs-status" style="margin-top:10px;font-size:11px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:10px;flex-wrap:wrap"></div>
+    <div class="hs-bar" id="hs-status"></div>
   </header>
 
   <div class="search-wrap">
     <div class="search-label">Find lookalikes for</div>
     <div class="search-box">
       <input class="search-input" id="search-input" type="text" placeholder="e.g. Transfermate, Rayna Tours, or any company..." autocomplete="off"/>
-      <button class="search-btn" id="search-btn" onclick="search()">Find lookalikes</button>
+      <button class="search-btn" id="search-btn" onclick="doSearch()">Find lookalikes</button>
     </div>
-    <div style="margin-top:14px">
-      <div class="customers-label">Your customers</div>
-      <div class="customer-chips" id="customer-chips"></div>
-    </div>
+    <div class="customers-label">Your customers</div>
+    <div class="customer-chips" id="customer-chips"></div>
   </div>
 
-  <div id="results-section"></div>
-<!-- Assistant Panel -->
+  <div id="results"></div>
+</div>
+
 <!-- Floating chat button -->
-<button id="chat-toggle" onclick="toggleChat()" style="position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,229,160,0.3);z-index:300;transition:.2s">
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2C6.03 2 2 5.58 2 10C2 12.1 2.9 14 4.4 15.4L3 20L7.8 18.3C8.8 18.75 9.87 19 11 19C15.97 19 20 15.42 20 11C20 6.58 15.97 2 11 2Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>
+<button id="chat-fab" onclick="toggleChat()" title="AI Assistant">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3C7.03 3 3 6.58 3 11C3 13.1 3.9 15 5.4 16.4L4 21L8.8 19.3C9.8 19.75 10.87 20 12 20C16.97 20 21 16.42 21 12C21 7.58 16.97 3 12 3Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>
 </button>
 
 <!-- Chat drawer -->
-<div id="assistant-panel" style="position:fixed;bottom:92px;right:28px;width:380px;max-height:560px;z-index:299;display:none;flex-direction:column;border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.4);border:1px solid var(--border2)">
-  <div style="background:var(--surface);flex:1;display:flex;flex-direction:column">
-    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div>
-        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text)">AI Assistant</div>
-        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Ask anything about your leads</div>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button onclick="clearChat()" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:'DM Mono',monospace">Clear</button>
-        <button onclick="toggleChat()" style="font-size:16px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0 4px;line-height:1">×</button>
-      </div>
+<div id="chat-drawer">
+  <div class="chat-header">
+    <div>
+      <div class="chat-title">AI Assistant</div>
+      <div class="chat-subtitle">Ask anything about your leads</div>
     </div>
-    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;max-height:360px">
-      <div class="chat-msg assistant">
-        <div class="msg-bubble assistant-bubble">Hi! I know your 21 customers, your HubSpot deals, and your search history. Ask me anything!</div>
-      </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button onclick="clearChat()" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:'DM Mono',monospace">Clear</button>
+      <button onclick="toggleChat()" style="font-size:20px;color:var(--muted);background:none;border:none;cursor:pointer;line-height:1;padding:0 2px">&times;</button>
     </div>
-    <div style="padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0">
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input type="text" id="chat-input" placeholder="Ask a question..." style="flex:1;padding:8px 11px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);outline:none;font-family:'DM Sans',sans-serif"/>
-        <button onclick="sendChat()" id="chat-btn" style="padding:8px 14px;background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif">Ask</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px" id="chat-suggestions"></div>
+  </div>
+  <div id="chat-messages">
+    <div class="msg"><div class="bubble ai">Hi! I know your 21 customers, your HubSpot data, and past feedback. Ask me anything — like "which verticals are we winning?" or "what should I search next?"</div></div>
+  </div>
+  <div class="chat-footer">
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Ask a question..."/>
+      <button id="chat-send" onclick="sendChat()">Ask</button>
     </div>
+    <div class="suggestions" id="chat-suggestions"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-let hubspotContext = '';
-let hubspotSummary = null;
+const CUSTOMERS=["12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba","Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation","American International Executive","Bedsopia","Damisa","Dubai Link","Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo"];
 
-async function loadHubspotContext() {
-  try {
-    const res = await fetch('/api/hubspot-context');
-    const data = await res.json();
-    if (data.available) {
-      hubspotContext = data.context || '';
-      hubspotSummary = data.summary;
-      const el = document.getElementById('hs-status');
-      const age = data.syncedAt ? new Date(data.syncedAt).toLocaleDateString() : 'unknown';
-      el.innerHTML = `
-        <span style="color:var(--accent)">● HubSpot connected</span>
-        <span style="color:var(--muted)">${data.summary.wonDeals} won · ${data.summary.lostDeals} lost · ${data.summary.activeDeals} active deals</span>
-        <span style="color:var(--muted)">Last sync: ${age}</span>
-        <button onclick="manualSync()" style="background:none;border:1px solid var(--border2);color:var(--muted);padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace">↻ Sync now</button>
-      `;
+let currentCompany='', currentResults=[], allFeedback=[], hubspotContext='', chatHistory=[];
+
+// Init
+document.getElementById('customer-chips').innerHTML=CUSTOMERS.map(c=>`<span class="customer-chip" onclick="useCustomer('${c}')">${c}</span>`).join('');
+document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+
+async function init(){
+  try{const r=await fetch('/api/feedback');allFeedback=await r.json();}catch(e){allFeedback=[];}
+  try{
+    const r=await fetch('/api/hubspot-context');
+    const d=await r.json();
+    if(d.available){
+      hubspotContext=d.context||'';
+      const el=document.getElementById('hs-status');
+      const age=d.syncedAt?new Date(d.syncedAt).toLocaleDateString():'unknown';
+      el.innerHTML=`<span style="color:var(--accent)">● HubSpot connected</span><span style="color:var(--muted)">${d.summary.wonDeals} won · ${d.summary.lostDeals} lost · ${d.summary.activeDeals} active</span><span style="color:var(--muted)">Synced: ${age}</span><button onclick="manualSync()" style="background:none;border:1px solid var(--border2);color:var(--muted);padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace">↻ Sync</button>`;
     } else {
-      document.getElementById('hs-status').innerHTML = '<span style="color:var(--muted)">○ HubSpot not connected</span>';
+      document.getElementById('hs-status').innerHTML='<span style="color:var(--muted)">○ HubSpot not connected</span>';
     }
-  } catch(e) {
-    document.getElementById('hs-status').innerHTML = '<span style="color:var(--muted)">○ HubSpot unavailable</span>';
-  }
+  }catch(e){}
+}
+init();
+
+async function manualSync(){
+  try{
+    const r=await fetch('/api/hubspot-sync',{method:'POST'});
+    const d=await r.json();
+    if(d.ok){showToast('HubSpot synced!',true);init();}else showToast('Sync failed');
+  }catch(e){showToast('Sync error');}
 }
 
-async function manualSync() {
-  const el = document.getElementById('hs-status');
-  el.innerHTML = '<span style="color:var(--muted)">↻ Syncing HubSpot...</span>';
-  try {
-    const res = await fetch('/api/hubspot-sync', { method: 'POST' });
-    const data = await res.json();
-    if (data.ok) { showToast('HubSpot synced!', true); loadHubspotContext(); }
-    else showToast('Sync failed');
-  } catch(e) { showToast('Sync error'); }
-}
+function useCustomer(name){document.getElementById('search-input').value=name;}
 
-const CUSTOMERS = [
-  "12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba",
-  "Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation",
-  "American International Executive","Bedsopia","Damisa","Dubai Link",
-  "Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo"
-];
-
-let currentCompany = '';
-let currentResults = [];
-let allFeedback = [];
-
-// Render customer chips
-document.getElementById('customer-chips').innerHTML = CUSTOMERS.map(c =>
-  `<span class="customer-chip" onclick="useCustomer('${c}')">${c}</span>`
-).join('');
-
-function useCustomer(name) {
-  document.getElementById('search-input').value = name;
-  document.getElementById('search-input').focus();
-}
-
-// Load all feedback on start
-async function loadFeedback() {
-  try {
-    const res = await fetch('/api/feedback');
-    allFeedback = await res.json();
-  } catch(e) { allFeedback = []; }
-}
-loadFeedback();
-loadHubspotContext();
-
-function getFeedbackFor(leadName, searchedCompany) {
-  return allFeedback.find(f => f.leadName === leadName && f.searchedCompany === searchedCompany) || null;
-}
-
-// Build feedback context string for the prompt
-function buildFeedbackContext() {
-  if (!allFeedback.length) return '';
-  const good = allFeedback.filter(f => f.rating === 'good');
-  const bad = allFeedback.filter(f => f.rating === 'bad');
-  let ctx = '\n\nLEARNED FEEDBACK FROM PAST SEARCHES (use this to improve results):\n';
-  if (good.length) ctx += 'Good leads found previously: ' + good.map(f => f.leadName + (f.note ? ' ('+f.note+')' : '')).join(', ') + '\n';
-  if (bad.length) ctx += 'Bad leads to avoid (and similar ones): ' + bad.map(f => f.leadName + (f.note ? ' because: '+f.note : '')).join(', ') + '\n';
+function buildFeedbackCtx(){
+  if(!allFeedback.length)return'';
+  const good=allFeedback.filter(f=>f.rating==='good').map(f=>f.leadName+(f.note?' ('+f.note+')':''));
+  const bad=allFeedback.filter(f=>f.rating==='bad').map(f=>f.leadName+(f.note?' because: '+f.note:''));
+  let ctx='';
+  if(good.length)ctx+='\nPreviously rated GOOD leads: '+good.join(', ')+'\n';
+  if(bad.length)ctx+='\nPreviously rated BAD leads (avoid similar): '+bad.join(', ')+'\n';
   return ctx;
 }
 
-async function search(loadMore = false) {
-  const company = document.getElementById('search-input').value.trim();
-  if (!company) { showToast('Enter a company name'); return; }
+async function doSearch(loadMore=false){
+  const company=document.getElementById('search-input').value.trim();
+  if(!company){showToast('Enter a company name');return;}
+  currentCompany=company;
+  const btn=document.getElementById('search-btn');
+  btn.disabled=true;
+  if(!loadMore){currentResults=[];showLoading(company);}
+  else{const lm=document.getElementById('lm-btn');if(lm){lm.disabled=true;lm.textContent='Loading...';}}
 
-  currentCompany = company;
-  const btn = document.getElementById('search-btn');
-  btn.disabled = true;
+  const alreadyFound=currentResults.map(r=>r.name);
 
-  if (!loadMore) {
-    currentResults = [];
-    showLoading(company);
-  } else {
-    const lmBtn = document.getElementById('load-more-btn');
-    if (lmBtn) { lmBtn.disabled = true; lmBtn.textContent = 'Loading...'; }
-  }
+  try{
+    // Step 1: Sonnet profiles company
+    if(!loadMore)updateStep(1);
+    const profilePrompt=`Research this company: "${company}"\n\nCustomer list for reference: ${CUSTOMERS.join(', ')}\n\nReturn ONLY valid JSON:\n{"name":"","description":"2-3 sentences","segment":"1 sentence type description","similar_to":["matching customer names"],"similarity_reasons":"2-3 sentences why similar","key_traits":["4-6 specific traits"],"what_to_look_for":"1-2 sentences on ideal lookalike"}`;
+    const r1=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:800,messages:[{role:'user',content:profilePrompt}]})});
+    const d1=await r1.json();
+    const profileText=(d1.content||[]).find(b=>b.type==='text')?.text||'';
+    const profile=JSON.parse(profileText.replace(/```json|```/g,'').trim());
+    if(!loadMore)updateStep(2);
 
-  const alreadyFound = currentResults.map(r => r.name);
-  const feedbackCtx = buildFeedbackContext();
-  const hsCtx = hubspotContext || '';
-
-  // Step 1: Sonnet profiles the company + understands which customers it resembles
-  if (!loadMore) updateStep(1);
-
-  const profilePrompt = `You are a business analyst. Research this company: "${company}"
-
-Your customer list for reference (these are existing customers):
-${CUSTOMERS.join(', ')}
-
-Task:
-1. Understand what "${company}" does — their business model, industry, who their customers are, how they operate internationally
-2. Identify which of the listed customers they most resemble and WHY specifically
-3. Extract the key traits that define "${company}" as a sales target
-
-Return ONLY valid JSON:
-{
-  "name": "official company name",
-  "description": "2-3 sentence description of what they do",
-  "segment": "1 sentence describing what type of company this is",
-  "similar_to": ["list of customer names from the list that are most similar"],
-  "similarity_reasons": "2-3 sentences explaining specifically why they are similar to those customers",
-  "key_traits": ["4-6 specific traits that define this company as a target, be very specific"],
-  "what_to_look_for": "1-2 sentences describing exactly what kind of company would be a lookalike"
-}`;
-
-  try {
-    const r1 = await fetch('/api/claude', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5-20250929', max_tokens: 800, messages: [{ role: 'user', content: profilePrompt }] })
-    });
-    const d1 = await r1.json();
-    const profileText = (d1.content || []).find(b => b.type === 'text')?.text || '';
-    const profile = JSON.parse(profileText.replace(/```json|```/g, '').trim());
-
-    if (!loadMore) updateStep(2);
-
-    // Step 2: Haiku finds lookalikes using the profile + feedback
-    const count = 8;
-    const lookalikesPrompt = `You are a B2B sales intelligence tool.
-
-Find ${count} real companies that are strong lookalikes to "${profile.name}".
-
-PROFILE OF TARGET:
-- Description: ${profile.description}
-- Segment: ${profile.segment}  
-- Key traits: ${profile.key_traits.join('; ')}
-- What to look for: ${profile.what_to_look_for}
-${feedbackCtx}${hsCtx}
-${alreadyFound.length ? 'ALREADY SHOWN (do not repeat): ' + alreadyFound.join(', ') : ''}
-
-Rules:
-- Real, specific companies only
-- Growth-stage or mid-market (not household giants)
-- Do NOT include "${profile.name}" itself
-- Each must genuinely match the profile traits
-- Explain specifically how each is similar to the profile
-
-Return ONLY valid JSON array:
-[{
-  "name": "",
-  "domain": "",
-  "hq": "City, Country",
-  "description": "1 sentence on what they do",
-  "why_similar": "2 sentences: specifically how this company matches the profile and key traits",
-  "fit_score": 0
-}]`;
-
-    const r2 = await fetch('/api/claude', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2500, messages: [{ role: 'user', content: lookalikesPrompt }] })
-    });
-    const d2 = await r2.json();
-    const text2 = (d2.content || []).find(b => b.type === 'text')?.text || '';
-    const newLeads = parseJSON(text2);
-
-    if (loadMore) {
-      currentResults = [...currentResults, ...newLeads];
-    } else {
-      currentResults = newLeads;
-      if (!loadMore) updateStep(3);
-    }
-
-    renderResults(profile, currentResults, !loadMore);
-  } catch(e) {
-    document.getElementById('results-section').innerHTML = `<div class="error-msg">Error: ${e.message}</div>`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Find lookalikes';
+    // Step 2: Haiku finds lookalikes
+    const fbCtx=buildFeedbackCtx();
+    const lookalikesPrompt=`Find 8 real lookalike companies to "${profile.name}".\n\nPROFILE:\n- ${profile.description}\n- Segment: ${profile.segment}\n- Key traits: ${profile.key_traits.join('; ')}\n- Look for: ${profile.what_to_look_for}\n${fbCtx}${hubspotContext}${alreadyFound.length?'\nDo NOT repeat: '+alreadyFound.join(', '):''}\n\nRules: real companies only, growth-stage/mid-market, not "${profile.name}" itself.\n\nReturn ONLY valid JSON array:\n[{"name":"","domain":"","hq":"City, Country","why_similar":"2 sentences specifically how they match","fit_score":0}]`;
+    const r2=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:lookalikesPrompt}]})});
+    const d2=await r2.json();
+    const text2=(d2.content||[]).find(b=>b.type==='text')?.text||'';
+    const newLeads=parseJSON(text2);
+    if(!loadMore)updateStep(3);
+    currentResults=loadMore?[...currentResults,...newLeads]:newLeads;
+    renderResults(profile,currentResults,!loadMore);
+  }catch(e){
+    document.getElementById('results').innerHTML=`<div style="color:var(--danger);padding:16px;font-size:13px">Error: ${e.message}</div>`;
+  }finally{
+    btn.disabled=false;btn.textContent='Find lookalikes';
   }
 }
 
-function updateStep(n) {
-  for (let i = 1; i <= 3; i++) {
-    const el = document.getElementById('step-' + i);
-    if (!el) continue;
-    el.classList.remove('active', 'done');
-    if (i < n) el.classList.add('done');
-    if (i === n) el.classList.add('active');
-  }
+function updateStep(n){for(let i=1;i<=3;i++){const el=document.getElementById('step-'+i);if(!el)return;el.classList.remove('active','done');if(i<n)el.classList.add('done');if(i===n)el.classList.add('active');}}
+
+function showLoading(company){
+  document.getElementById('results').innerHTML=`<div class="loading"><div class="load-step active" id="step-1"><div class="step-dot"></div>Researching ${company}...</div><div class="load-step" id="step-2"><div class="step-dot"></div>Matching against your 21 customers...</div><div class="load-step" id="step-3"><div class="step-dot"></div>Finding lookalikes...</div></div>`;
 }
 
-function showLoading(company) {
-  document.getElementById('results-section').innerHTML = `
-    <div class="loading">
-      <div class="loading-step active" id="step-1"><div class="step-dot"></div>Researching ${company}...</div>
-      <div class="loading-step" id="step-2"><div class="step-dot"></div>Matching against your 21 customers...</div>
-      <div class="loading-step" id="step-3"><div class="step-dot"></div>Finding lookalikes...</div>
-    </div>`;
-}
+function isSaved(name){return allFeedback.some(f=>f.leadName===name&&f.searchedCompany===currentCompany);}
+function getFB(name){return allFeedback.find(f=>f.leadName===name&&f.searchedCompany===currentCompany)||null;}
 
-function renderResults(profile, leads, isFirst) {
-  const sorted = [...leads].sort((a, b) => b.fit_score - a.fit_score);
-
-  let html = '';
-
-  if (isFirst) {
-    html += `
-    <div class="results-header">
-      <div>
-        <div class="results-title">Lookalikes for <span>${profile.name}</span></div>
-        <div class="results-meta">${profile.segment}</div>
-      </div>
-    </div>
-    <div class="reasoning-box">
-      <div class="reasoning-label">Why these results</div>
-      <div class="reasoning-text">${profile.similarity_reasons || profile.description}</div>
-      ${profile.similar_to && profile.similar_to.length ? `
-        <div style="margin-top:10px;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Most similar to your customers</div>
-        <div class="similar-to">${profile.similar_to.map(s => `<span class="sim-chip">${s}</span>`).join('')}</div>
-      ` : ''}
-    </div>`;
+function renderResults(profile,leads,isFirst){
+  const sorted=[...leads].sort((a,b)=>b.fit_score-a.fit_score);
+  let html='';
+  if(isFirst){
+    html+=`<div style="margin-bottom:20px"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:600;margin-bottom:4px">Lookalikes for <span style="color:var(--accent)">${profile.name}</span></div><div style="font-size:13px;color:var(--muted)">${profile.segment}</div></div>`;
+    html+=`<div class="reasoning-box"><div class="reasoning-label">Why these results</div><div class="reasoning-text">${profile.similarity_reasons||profile.description}</div>${profile.similar_to&&profile.similar_to.length?`<div style="margin-top:10px;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Most similar to your customers</div><div class="sim-chips">${profile.similar_to.map(s=>`<span class="sim-chip">${s}</span>`).join('')}</div>`:''}</div>`;
   }
-
-  html += sorted.map(lead => {
-    const fb = getFeedbackFor(lead.name, currentCompany);
-    const pct = Math.min(99, Math.max(30, lead.fit_score || 75));
-    const cardClass = fb?.rating === 'good' ? 'rated-good' : fb?.rating === 'bad' ? 'rated-bad' : '';
-    const goodActive = fb?.rating === 'good' ? 'active' : '';
-    const badActive = fb?.rating === 'bad' ? 'active' : '';
-    const statusVal = fb?.status || 'new';
-    const noteVal = fb?.note || '';
-    const safeId = lead.name.replace(/[^a-z0-9]/gi, '-');
-
-    return `
-    <div class="lead-card ${cardClass}" id="card-${safeId}">
-      <div class="lead-top">
-        <div>
-          <div class="lead-name">${lead.name}</div>
-          <div class="lead-domain">${lead.domain || ''} · ${lead.hq || ''}</div>
-        </div>
-        <div>
-          <div class="lead-score">${pct}</div>
-          <div class="lead-score-label">fit score</div>
-        </div>
-      </div>
-      <div class="lead-similarity">${lead.why_similar || ''}</div>
+  sorted.forEach(lead=>{
+    const pct=Math.min(99,Math.max(30,lead.fit_score||75));
+    const fb=getFB(lead.name);
+    const cardCls=fb?.rating==='good'?'rated-good':fb?.rating==='bad'?'rated-bad':'';
+    const goodCls=fb?.rating==='good'?'active':'';
+    const badCls=fb?.rating==='bad'?'active':'';
+    const sid=lead.name.replace(/[^a-z0-9]/gi,'-');
+    html+=`<div class="result-card ${cardCls}" id="card-${sid}">
+      <div class="rc-top"><div><div class="rc-name">${lead.name}</div><div class="rc-domain">${lead.domain||''} · ${lead.hq||''}</div></div><div style="text-align:right;flex-shrink:0"><div class="rc-score">${pct}</div><div class="rc-score-label">fit score</div></div></div>
+      <div class="rc-why">${lead.why_similar||''}</div>
       <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
       <div class="feedback-row">
-        <div class="rating-btns">
-          <button class="rating-btn good ${goodActive}" onclick="rate('${lead.name}','${lead.domain||''}','good',this)">👍 Good lead</button>
-          <button class="rating-btn bad ${badActive}" onclick="rate('${lead.name}','${lead.domain||''}','bad',this)">👎 Bad lead</button>
-        </div>
-        <select class="status-select" id="status-${safeId}" onchange="saveStatus('${lead.name}',this.value)">
-          <option value="new" ${statusVal==='new'?'selected':''}>New</option>
-          <option value="contacted" ${statusVal==='contacted'?'selected':''}>Contacted</option>
-          <option value="won" ${statusVal==='won'?'selected':''}>Won</option>
-          <option value="lost" ${statusVal==='lost'?'selected':''}>Lost</option>
+        <button class="rating-btn good ${goodCls}" data-lead='${JSON.stringify(lead).replace(/'/g,"&#39;")}' onclick="rate(this,'good')">👍 Good</button>
+        <button class="rating-btn bad ${badCls}" data-lead='${JSON.stringify(lead).replace(/'/g,"&#39;")}' onclick="rate(this,'bad')">👎 Bad</button>
+        <select class="status-select" onchange="saveStatus('${lead.name}',this.value)">
+          <option value="new" ${(fb?.status||'new')==='new'?'selected':''}>New</option>
+          <option value="contacted" ${fb?.status==='contacted'?'selected':''}>Contacted</option>
+          <option value="won" ${fb?.status==='won'?'selected':''}>Won</option>
+          <option value="lost" ${fb?.status==='lost'?'selected':''}>Lost</option>
         </select>
-        <div class="note-wrap">
-          <input class="note-input" id="note-${safeId}" type="text" placeholder="Add a note..." value="${noteVal}"/>
-        </div>
-        <button class="save-note-btn" onclick="saveNote('${lead.name}','${lead.domain||''}','${safeId}')">Save</button>
-        ${lead.domain ? `<button class="rating-btn" onclick="window.open('https://${lead.domain}','_blank')">↗</button>` : ''}
+        <input class="note-input" id="note-${sid}" type="text" placeholder="Add a note..." value="${fb?.note||''}"/>
+        <button class="save-btn" onclick="saveNote('${lead.name}','${lead.domain||''}','${sid}')">Save</button>
+        ${lead.domain?`<button class="rating-btn" onclick="window.open('https://${lead.domain}','_blank')">↗</button>`:''}
       </div>
     </div>`;
-  }).join('');
-
-  html += `
-  <div class="load-more-wrap">
-    <button class="load-more-btn" id="load-more-btn" onclick="search(true)">Load more lookalikes</button>
-  </div>`;
-
-  if (isFirst) {
-    document.getElementById('results-section').innerHTML = `<div class="results-section">${html}</div>`;
-  } else {
-    // Append new cards before load more button
-    const lmWrap = document.querySelector('.load-more-wrap');
-    const newCards = document.createElement('div');
-    newCards.innerHTML = sorted.slice(sorted.length - (currentResults.length - sorted.length + sorted.length)).map(lead => {
-      // just re-render all and replace
-      return '';
-    }).join('');
-    // Simpler: just re-render the whole section
-    document.getElementById('results-section').innerHTML = `<div class="results-section">${html}</div>`;
-  }
+  });
+  html+=`<button class="load-more-btn" id="lm-btn" onclick="doSearch(true)">Load more lookalikes</button>`;
+  document.getElementById('results').innerHTML=html;
 }
 
-async function rate(leadName, domain, rating, btn) {
-  const safeId = leadName.replace(/[^a-z0-9]/gi, '-');
-  const note = document.getElementById('note-' + safeId)?.value || '';
-  const status = document.getElementById('status-' + safeId)?.value || 'new';
-
-  // Toggle off if already active
-  const isToggleOff = btn.classList.contains('active');
-  const newRating = isToggleOff ? null : rating;
-
-  try {
-    await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadName, domain, searchedCompany: currentCompany, rating: newRating, note, status })
-    });
-
-    // Update local feedback
-    const idx = allFeedback.findIndex(f => f.leadName === leadName && f.searchedCompany === currentCompany);
-    const entry = { leadName, domain, searchedCompany: currentCompany, rating: newRating, note, status };
-    if (idx > -1) allFeedback[idx] = entry; else allFeedback.push(entry);
-
-    // Update UI
-    const card = document.getElementById('card-' + safeId);
-    if (card) {
-      card.classList.remove('rated-good', 'rated-bad');
-      if (newRating === 'good') card.classList.add('rated-good');
-      if (newRating === 'bad') card.classList.add('rated-bad');
-    }
-    card.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
-    if (newRating) btn.classList.add('active');
-
-    showToast(newRating ? (newRating === 'good' ? '👍 Marked as good lead' : '👎 Marked as bad lead') : 'Rating removed', !!newRating);
-  } catch(e) { showToast('Error saving feedback'); }
+async function rate(btn,rating){
+  const lead=JSON.parse(btn.dataset.lead.replace(/&#39;/g,"'"));
+  const sid=lead.name.replace(/[^a-z0-9]/gi,'-');
+  const note=document.getElementById('note-'+sid)?.value||'';
+  const status=document.querySelector(`#card-${sid} .status-select`)?.value||'new';
+  const isToggleOff=btn.classList.contains('active');
+  const newRating=isToggleOff?null:rating;
+  try{
+    await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leadName:lead.name,domain:lead.domain||'',searchedCompany:currentCompany,rating:newRating,note,status})});
+    const idx=allFeedback.findIndex(f=>f.leadName===lead.name&&f.searchedCompany===currentCompany);
+    const entry={leadName:lead.name,domain:lead.domain||'',searchedCompany:currentCompany,rating:newRating,note,status};
+    if(idx>-1)allFeedback[idx]=entry;else allFeedback.push(entry);
+    const card=document.getElementById('card-'+sid);
+    if(card){card.classList.remove('rated-good','rated-bad');if(newRating==='good')card.classList.add('rated-good');if(newRating==='bad')card.classList.add('rated-bad');}
+    card.querySelectorAll('.rating-btn.good,.rating-btn.bad').forEach(b=>b.classList.remove('active'));
+    if(newRating)btn.classList.add('active');
+    showToast(newRating?(newRating==='good'?'👍 Good lead':'👎 Bad lead'):'Rating removed',!!newRating);
+  }catch(e){showToast('Error saving');}
 }
 
-async function saveNote(leadName, domain, safeId) {
-  const note = document.getElementById('note-' + safeId)?.value || '';
-  const status = document.getElementById('status-' + safeId)?.value || 'new';
-  const fb = getFeedbackFor(leadName, currentCompany);
-  const rating = fb?.rating || null;
-
-  try {
-    await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadName, domain, searchedCompany: currentCompany, rating, note, status })
-    });
-    const idx = allFeedback.findIndex(f => f.leadName === leadName && f.searchedCompany === currentCompany);
-    const entry = { leadName, domain, searchedCompany: currentCompany, rating, note, status };
-    if (idx > -1) allFeedback[idx] = entry; else allFeedback.push(entry);
-    showToast('Note saved', true);
-  } catch(e) { showToast('Error saving note'); }
+async function saveNote(name,domain,sid){
+  const note=document.getElementById('note-'+sid)?.value||'';
+  const status=document.querySelector(`#card-${sid} .status-select`)?.value||'new';
+  const fb=getFB(name);
+  try{
+    await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leadName:name,domain,searchedCompany:currentCompany,rating:fb?.rating||null,note,status})});
+    const idx=allFeedback.findIndex(f=>f.leadName===name&&f.searchedCompany===currentCompany);
+    const entry={leadName:name,domain,searchedCompany:currentCompany,rating:fb?.rating||null,note,status};
+    if(idx>-1)allFeedback[idx]=entry;else allFeedback.push(entry);
+    showToast('Note saved',true);
+  }catch(e){showToast('Error saving');}
 }
 
-async function saveStatus(leadName, status) {
-  try {
-    await fetch('/api/status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadName, searchedCompany: currentCompany, status })
-    });
-    const idx = allFeedback.findIndex(f => f.leadName === leadName && f.searchedCompany === currentCompany);
-    if (idx > -1) allFeedback[idx].status = status;
-    else allFeedback.push({ leadName, searchedCompany: currentCompany, status, rating: null, note: '' });
-    showToast('Status updated', true);
-  } catch(e) { showToast('Error saving status'); }
+async function saveStatus(name,status){
+  try{
+    await fetch('/api/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leadName:name,searchedCompany:currentCompany,status})});
+    const idx=allFeedback.findIndex(f=>f.leadName===name&&f.searchedCompany===currentCompany);
+    if(idx>-1)allFeedback[idx].status=status;else allFeedback.push({leadName:name,searchedCompany:currentCompany,status,rating:null,note:''});
+    showToast('Status updated',true);
+  }catch(e){}
 }
 
-function parseJSON(text) {
-  const clean = text.replace(/```json|```/g, '').trim();
-  try { return JSON.parse(clean); } catch(e) {}
-  const start = clean.indexOf('[');
-  if (start === -1) throw new Error('No results returned');
-  let end = clean.lastIndexOf('}');
-  while (end > start) {
-    try {
-      const attempt = clean.slice(start, end + 1) + ']';
-      const parsed = JSON.parse(attempt);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    } catch(e) {}
-    end = clean.lastIndexOf('}', end - 1);
-  }
+function parseJSON(text){
+  const clean=text.replace(/```json|```/g,'').trim();
+  try{return JSON.parse(clean);}catch(e){}
+  const start=clean.indexOf('[');if(start===-1)throw new Error('No results');
+  let end=clean.lastIndexOf('}');
+  while(end>start){try{const a=clean.slice(start,end+1)+']';const p=JSON.parse(a);if(Array.isArray(p)&&p.length)return p;}catch(e){}end=clean.lastIndexOf('}',end-1);}
   throw new Error('Could not parse results');
 }
 
-// Enter key triggers search
-document.getElementById('search-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') search();
-});
+// Chat
+const SUGGESTIONS=["Which verticals are we winning?","What do lost deals have in common?","Who should I target in APAC?","What makes a good lead?","Which industries to avoid?"];
 
-let chatHistory = [];
+function toggleChat(){document.getElementById('chat-drawer').classList.toggle('open');}
 
-const CHAT_SUGGESTIONS = [
-  "Which verticals are we winning?",
-  "What do lost deals have in common?",
-  "Who should I target in APAC?",
-  "What makes a good lead for us?",
-  "Which industries should we avoid?"
-];
+document.getElementById('chat-suggestions').innerHTML=SUGGESTIONS.map(s=>`<button class="sug" onclick="useSug('${s}')">${s}</button>`).join('');
 
-function renderSuggestions() {
-  document.getElementById('chat-suggestions').innerHTML = CHAT_SUGGESTIONS
-    .map(s => `<button class="suggestion-chip" onclick="useSuggestion('${s}')">${s}</button>`)
-    .join('');
-}
-renderSuggestions();
+function useSug(text){document.getElementById('chat-input').value=text;sendChat();}
 
-function useSuggestion(text) {
-  document.getElementById('chat-input').value = text;
-  sendChat();
+function clearChat(){
+  chatHistory=[];
+  document.getElementById('chat-messages').innerHTML='<div class="msg"><div class="bubble ai">Chat cleared! Ask me anything.</div></div>';
 }
 
-function toggleChat() {
-  const panel = document.getElementById('assistant-panel');
-  const isOpen = panel.style.display === 'flex';
-  panel.style.display = isOpen ? 'none' : 'flex';
-  panel.style.flexDirection = 'column';
-}
-
-function clearChat() {
-  chatHistory = [];
-  document.getElementById('chat-messages').innerHTML = `
-    <div class="chat-msg assistant">
-      <div class="msg-bubble assistant-bubble">Chat cleared. Ask me anything about your leads, customers, or HubSpot data!</div>
-    </div>`;
-}
-
-function appendMessage(role, text) {
-  const el = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = `chat-msg ${role}`;
-  div.innerHTML = `<div class="msg-bubble ${role}-bubble">${text.replace(/\n/g, '<br>')}</div>`;
+function appendMsg(role,text){
+  const el=document.getElementById('chat-messages');
+  const div=document.createElement('div');
+  div.className='msg';
+  div.innerHTML=`<div class="bubble ${role}">${text.replace(/\n/g,'<br>')}</div>`;
   el.appendChild(div);
-  el.scrollTop = el.scrollHeight;
+  el.scrollTop=el.scrollHeight;
   return div;
 }
 
-function showThinking() {
-  const el = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = 'chat-msg assistant';
-  div.id = 'thinking-msg';
-  div.innerHTML = '<div class="msg-thinking">Thinking...</div>';
-  el.appendChild(div);
-  el.scrollTop = el.scrollHeight;
+async function sendChat(){
+  const input=document.getElementById('chat-input');
+  const q=input.value.trim();
+  if(!q)return;
+  input.value='';
+  appendMsg('user',q);
+  const thinking=appendMsg('ai','<span class="thinking">Thinking...</span>');
+  document.getElementById('chat-send').disabled=true;
+  const good=allFeedback.filter(f=>f.rating==='good').map(f=>f.leadName+(f.note?' ('+f.note+')':'')).join(', ')||'none yet';
+  const bad=allFeedback.filter(f=>f.rating==='bad').map(f=>f.leadName+(f.note?' - '+f.note:'')).join(', ')||'none yet';
+  const sys=`You are a sales intelligence assistant. You know:\n\nCUSTOMERS: ${CUSTOMERS.join(', ')}\n\nGOOD LEADS RATED: ${good}\nBAD LEADS RATED: ${bad}\n${hubspotContext||'HubSpot: not connected'}\n\nBe concise and specific. Max 120 words unless detail is needed.`;
+  chatHistory.push({role:'user',content:q});
+  try{
+    const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:350,system:sys,messages:chatHistory})});
+    const d=await r.json();
+    const reply=(d.content||[]).find(b=>b.type==='text')?.text||'Sorry, no response.';
+    chatHistory.push({role:'assistant',content:reply});
+    thinking.querySelector('.bubble').innerHTML=reply.replace(/\n/g,'<br>');
+  }catch(e){thinking.querySelector('.bubble').textContent='Error: '+e.message;}
+  finally{document.getElementById('chat-send').disabled=false;}
+  document.getElementById('chat-messages').scrollTop=9999;
 }
-
-function removeThinking() {
-  const el = document.getElementById('thinking-msg');
-  if (el) el.remove();
-}
-
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const question = input.value.trim();
-  if (!question) return;
-
-  input.value = '';
-  appendMessage('user', question);
-  showThinking();
-
-  const btn = document.getElementById('chat-btn');
-  btn.disabled = true;
-
-  // Build system context
-  const db = await fetch('/api/feedback').then(r => r.json()).catch(() => []);
-  const hsData = await fetch('/api/hubspot-context').then(r => r.json()).catch(() => ({}));
-
-  const goodLeads = db.filter(f => f.rating === 'good').map(f => f.leadName + (f.note ? ' ('+f.note+')' : ''));
-  const badLeads = db.filter(f => f.rating === 'bad').map(f => f.leadName + (f.note ? ' because: '+f.note : ''));
-  const wonDeals = hsData.available ? (await fetch('/api/hubspot-context').then(r=>r.json()).catch(()=>({}))).context || '' : '';
-
-  const systemPrompt = `You are a smart sales intelligence assistant for a B2B company.
-
-You have access to the following data:
-
-EXISTING CUSTOMERS (21 companies):
-${CUSTOMERS.join(', ')}
-
-USER FEEDBACK ON LEADS:
-Good leads found: ${goodLeads.length ? goodLeads.join(', ') : 'none yet'}
-Bad leads flagged: ${badLeads.length ? badLeads.join(', ') : 'none yet'}
-
-${hsData.available ? `HUBSPOT CRM DATA:
-${wonDeals}
-Total companies in CRM: ${hsData.summary?.companies || 0}
-Won deals: ${hsData.summary?.wonDeals || 0}
-Lost deals: ${hsData.summary?.lostDeals || 0}
-Active pipeline: ${hsData.summary?.activeDeals || 0} deals` : 'HubSpot: not connected'}
-
-Answer the user's question concisely and helpfully. Be specific and actionable. Keep answers under 150 words unless detail is needed.`;
-
-  chatHistory.push({ role: 'user', content: question });
-
-  try {
-    const res = await fetch('/api/claude', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
-        system: systemPrompt,
-        messages: chatHistory
-      })
-    });
-    const data = await res.json();
-    const reply = (data.content || []).find(b => b.type === 'text')?.text || 'Sorry, I could not get a response.';
-    chatHistory.push({ role: 'assistant', content: reply });
-    removeThinking();
-    appendMessage('assistant', reply);
-  } catch(e) {
-    removeThinking();
-    appendMessage('assistant', 'Error: ' + e.message);
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-document.getElementById('chat-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendChat();
-});
-
 
 let toastTimer;
-function showToast(msg, ok = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (ok ? ' ok' : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.className = 'toast', 2500);
-}
+function showToast(msg,ok=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(ok?' ok':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='toast',2500);}
 </script>
 </body>
 </html>
