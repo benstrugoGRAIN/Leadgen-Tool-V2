@@ -1,6 +1,5 @@
 const express = require('express');
 const fetch = require('node-fetch');
-const fs = require('fs');
 const path = require('path');
 
 const app = express();
@@ -8,7 +7,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-const DB_PATH = process.env.DB_PATH || '/data/feedback.json';
+const fs = require('fs');
+const DATA_DIR = fs.existsSync('/data') ? '/data' : __dirname;
+const DB_PATH = process.env.DB_PATH || require('path').join(DATA_DIR, 'feedback.json');
+console.log('Using DB path:', DB_PATH);
 
 // Initialize feedback DB
 if (!fs.existsSync(DB_PATH)) {
