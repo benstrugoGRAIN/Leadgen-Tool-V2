@@ -120,12 +120,22 @@ header{margin-bottom:48px}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(0,229,160,0.3);color:var(--accent)}
 
+.chat-msg{display:flex;flex-direction:column;gap:2px}
+.msg-bubble{font-size:13px;line-height:1.6;padding:10px 14px;border-radius:12px;max-width:100%;word-wrap:break-word}
+.assistant-bubble{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px 12px 12px 12px}
+.user-bubble{background:rgba(0,229,160,0.1);color:var(--text);border:1px solid rgba(0,229,160,0.2);border-radius:12px 4px 12px 12px;align-self:flex-end}
+.user-msg{align-items:flex-end}
+.msg-thinking{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;padding:8px 0;animation:pulse 1s ease-in-out infinite alternate}
+.suggestion-chip{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
+.suggestion-chip:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" style="max-width:1300px">
+<div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start">
+<div id="main-col">
   <header>
     <div class="logo">Lead<span>Finder</span></div>
     <div class="subtitle">Type any company · find who looks like them</div>
@@ -146,6 +156,35 @@ header{margin-bottom:48px}
 
   <div id="results-section"></div>
 </div>
+
+</div><!-- end main-col -->
+
+<!-- Assistant Panel -->
+<div id="assistant-panel" style="position:sticky;top:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">AI Assistant</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace">Ask anything about your leads</div>
+      </div>
+      <button onclick="clearChat()" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:'DM Mono',monospace">Clear</button>
+    </div>
+    <div id="chat-messages" style="height:420px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div class="chat-msg assistant">
+        <div class="msg-bubble assistant-bubble">Hi! I know your 21 customers, your HubSpot deals, and your search history. Ask me anything — like "which verticals are we winning?" or "what should I search for next?"</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border)">
+      <div style="display:flex;gap:8px">
+        <input type="text" id="chat-input" placeholder="Ask a question..." style="flex:1;padding:9px 12px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);outline:none;font-family:'DM Sans',sans-serif"/>
+        <button onclick="sendChat()" id="chat-btn" style="padding:9px 16px;background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap">Ask</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px" id="chat-suggestions"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end grid -->
 
 <div class="toast" id="toast"></div>
 
@@ -540,6 +579,132 @@ function parseJSON(text) {
 document.getElementById('search-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') search();
 });
+
+let chatHistory = [];
+
+const CHAT_SUGGESTIONS = [
+  "Which verticals are we winning?",
+  "What do lost deals have in common?",
+  "Who should I target in APAC?",
+  "What makes a good lead for us?",
+  "Which industries should we avoid?"
+];
+
+function renderSuggestions() {
+  document.getElementById('chat-suggestions').innerHTML = CHAT_SUGGESTIONS
+    .map(s => `<button class="suggestion-chip" onclick="useSuggestion('${s}')">${s}</button>`)
+    .join('');
+}
+renderSuggestions();
+
+function useSuggestion(text) {
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="chat-msg assistant">
+      <div class="msg-bubble assistant-bubble">Chat cleared. Ask me anything about your leads, customers, or HubSpot data!</div>
+    </div>`;
+}
+
+function appendMessage(role, text) {
+  const el = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.innerHTML = `<div class="msg-bubble ${role}-bubble">${text.replace(/\n/g, '<br>')}</div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return div;
+}
+
+function showThinking() {
+  const el = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg assistant';
+  div.id = 'thinking-msg';
+  div.innerHTML = '<div class="msg-thinking">Thinking...</div>';
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function removeThinking() {
+  const el = document.getElementById('thinking-msg');
+  if (el) el.remove();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const question = input.value.trim();
+  if (!question) return;
+
+  input.value = '';
+  appendMessage('user', question);
+  showThinking();
+
+  const btn = document.getElementById('chat-btn');
+  btn.disabled = true;
+
+  // Build system context
+  const db = await fetch('/api/feedback').then(r => r.json()).catch(() => []);
+  const hsData = await fetch('/api/hubspot-context').then(r => r.json()).catch(() => ({}));
+
+  const goodLeads = db.filter(f => f.rating === 'good').map(f => f.leadName + (f.note ? ' ('+f.note+')' : ''));
+  const badLeads = db.filter(f => f.rating === 'bad').map(f => f.leadName + (f.note ? ' because: '+f.note : ''));
+  const wonDeals = hsData.available ? (await fetch('/api/hubspot-context').then(r=>r.json()).catch(()=>({}))).context || '' : '';
+
+  const systemPrompt = `You are a smart sales intelligence assistant for a B2B company.
+
+You have access to the following data:
+
+EXISTING CUSTOMERS (21 companies):
+${CUSTOMERS.join(', ')}
+
+USER FEEDBACK ON LEADS:
+Good leads found: ${goodLeads.length ? goodLeads.join(', ') : 'none yet'}
+Bad leads flagged: ${badLeads.length ? badLeads.join(', ') : 'none yet'}
+
+${hsData.available ? `HUBSPOT CRM DATA:
+${wonDeals}
+Total companies in CRM: ${hsData.summary?.companies || 0}
+Won deals: ${hsData.summary?.wonDeals || 0}
+Lost deals: ${hsData.summary?.lostDeals || 0}
+Active pipeline: ${hsData.summary?.activeDeals || 0} deals` : 'HubSpot: not connected'}
+
+Answer the user's question concisely and helpfully. Be specific and actionable. Keep answers under 150 words unless detail is needed.`;
+
+  chatHistory.push({ role: 'user', content: question });
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        system: systemPrompt,
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const reply = (data.content || []).find(b => b.type === 'text')?.text || 'Sorry, I could not get a response.';
+    chatHistory.push({ role: 'assistant', content: reply });
+    removeThinking();
+    appendMessage('assistant', reply);
+  } catch(e) {
+    removeThinking();
+    appendMessage('assistant', 'Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
 
 let toastTimer;
 function showToast(msg, ok = false) {
