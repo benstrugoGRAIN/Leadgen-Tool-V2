@@ -10,7 +10,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,160,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
-.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 24px}
+.app{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:40px 24px}
 
 /* Header */
 header{margin-bottom:48px}
@@ -128,6 +128,7 @@ header{margin-bottom:48px}
 .msg-thinking{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;padding:8px 0;animation:pulse 1s ease-in-out infinite alternate}
 .suggestion-chip{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
 .suggestion-chip:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
+@media(max-width:1000px){#assistant-panel{display:none}}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 </style>
