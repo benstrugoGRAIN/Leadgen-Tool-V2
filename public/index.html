@@ -181,11 +181,54 @@ header{margin-bottom:40px}
   </div>
 </div>
 
+
+<!-- Customer profile modal -->
+<div id="customer-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;display:none;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeCustomerModal()">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:560px;max-height:80vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.15)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+      <div>
+        <div id="cm-name" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#111;margin-bottom:4px"></div>
+        <div id="cm-subtitle" style="font-size:13px;color:#555;font-family:'DM Mono',monospace"></div>
+      </div>
+      <button onclick="closeCustomerModal()" style="background:none;border:none;font-size:22px;color:#999;cursor:pointer;padding:0 4px;line-height:1">&times;</button>
+    </div>
+
+    <!-- Volume & partners -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px" id="cm-stats"></div>
+
+    <!-- FX signals -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#4B6EF5;margin-bottom:10px">FX Exposure Signals</div>
+      <div id="cm-fx" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- Geographies -->
+    <div style="margin-bottom:20px" id="cm-geo-section">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#4B6EF5;margin-bottom:10px">Geographic Reach</div>
+      <div id="cm-geo" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- Top partners -->
+    <div>
+      <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#4B6EF5;margin-bottom:10px">Top Partner Companies (last 90 days)</div>
+      <div id="cm-partners" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+    <!-- Actions -->
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;display:flex;gap:10px">
+      <button onclick="searchFromModal()" style="flex:1;padding:11px;background:#4B6EF5;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif">Find lookalikes for this customer</button>
+      <button onclick="closeCustomerModal()" style="padding:11px 18px;background:#f4f6fb;color:#555;border:1px solid #ddd;border-radius:10px;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const CUSTOMERS=["12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba","Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation","American International Executive","Bedsopia","Damisa","Dubai Link","Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo","Weski"];
 
+
+const CUSTOMER_PROFILES = {"Go Global Travel": {"total_volume": 815199483, "partner_count": 13035, "top_partners": [["HotelMize Project", 28856835], ["Housearch IT L.L.C XML", 22177510], ["TBO HOLIDAYS B2B WEB", 13116352], ["TBO HOLIDAYS OE", 6405545], ["XML Russian express direct", 5914730], ["STUBA FULL", 5859686], ["OTTILA B2B - GGT", 5145089], ["HOLISTO SAFE DISTRIBUTION", 4506985], ["AZUL VIAGENS OE", 4487542], ["Sunhotels Prebook", 4349058]], "geographies": {"EMEA": 167, "APAC": 48, "Americas": 1401, "Middle East": 125}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume", "Large partner network"]}, "Stuba": {"total_volume": 549490548, "partner_count": 3583, "top_partners": [], "geographies": {}, "fx_signals": ["Multi-currency operations", "High FX volume", "Large partner network"]}, "Mize Direct Customer": {"total_volume": 86844587, "partner_count": 54, "top_partners": [["C100054", 14490218], ["C100120", 10540932], ["C100122", 4048862], ["C100096", 2418629], ["C100046", 2382386], ["C100151", 549761], ["C100087", 365433], ["C100059", 347662], ["C100081", 296479], ["C100068", 295955]], "geographies": {}, "fx_signals": ["Multi-currency operations", "High FX volume"]}, "Bookaway-12GO": {"total_volume": 35437593, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": ["High FX volume"]}, "Mize - Bedbank": {"total_volume": 26611302, "partner_count": 37, "top_partners": [["Go global travel", 9380371], ["HOTELBEDS SPAIN, S.L.U", 4398995], ["STAYFORLONG SL", 353079], ["WebBeds FZ-LLC, LLC", 334217], ["Peakpoint", 250390], ["SOLUCIONES INTEGRALES VACACIONALES SL", 194531], ["Low World Travel, S.L", 185753], ["BEDSOPIA FZCO", 108323], ["Hotelmize", 100733], ["Agoda Company Pte. Ltd.", 98866]], "geographies": {"EMEA": 5, "Middle East": 7}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume"]}, "Travelier": {"total_volume": 13016741, "partner_count": 2, "top_partners": [["Bookaway Topups", 251863]], "geographies": {}, "fx_signals": ["High FX volume"]}, "Bedsopia": {"total_volume": 11338352, "partner_count": 213, "top_partners": [["AURUMTOURS VIA ANIXE", 1449516], ["100002 CUG", 1267814], ["100000 B2B", 799936], ["STAYFORLONG PRIME B2B", 633134], ["STAYFORLONG WEB", 469839], ["AGODA B2B", 367278], ["AGODA MOBILE", 356777], ["BOOKINGAGORA", 258196], ["HOTELMIZE", 227605], ["100002 EXP", 195593]], "geographies": {"EMEA": 3, "APAC": 4, "Middle East": 2}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume", "Large partner network"]}, "Ultimate Jet Vacation": {"total_volume": 6508936, "partner_count": 352, "top_partners": [["Flaminia Chapman", 213825], ["Rebecca Farber", 136496], ["Mallory Shaw", 120907], ["Puja Gogawale", 118686], ["Isla Steinberg", 117278], ["Annie Chambers", 110717], ["Jenna Golden", 110637], ["Jennifer A Anderson", 104569], ["Shelley Taylor", 94794], ["Carole Williams", 86965]], "geographies": {"Middle East": 1}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "High FX volume", "Large partner network"]}, "Dubai Link": {"total_volume": 3900389, "partner_count": 254, "top_partners": [["Hotelston retail", 439224], ["RateHawk\u2013Guru XML", 323196], ["Letsfly", 244188], ["Heytrip", 159901], ["AIC Travel B2B XML", 146984], ["HOTELSTON XML", 139775], ["Travel Destination Online", 133454], ["Peakpoint Travel", 128553], ["Ebooking Center - XML", 80696], ["TONGCHENG - XML", 75458]], "geographies": {"EMEA": 1, "APAC": 3, "Americas": 1, "Middle East": 24}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume", "Large partner network"]}, "American Executive International": {"total_volume": 1203878, "partner_count": 79, "top_partners": [["RECORD TOUR OPERATOR", 742347], ["Allbeds", 71166], ["Allbeds Retails", 70195], ["globohotel.mx", 29591], ["JUAN TOSELLI VIAJES", 16532], ["EDUARDO PEZZATI TURISMO", 16490], ["VETURIS -JP", 15037], ["RICALE VIAJES SRL", 13637], ["TRAVEL HOUSE SRL", 11613], ["PriceTravel Holding", 11057]], "geographies": {}, "fx_signals": ["Multi-currency operations", "High FX volume"]}, "Finmo": {"total_volume": 1037541, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": ["High FX volume"]}, "Mobi": {"total_volume": 11000, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": []}, "Fyorin": {"total_volume": 4770, "partner_count": 1, "top_partners": [["PorterPays Limited", 4770]], "geographies": {}, "fx_signals": []}, "Grain Production Dual Hedge Partner": {"total_volume": 642, "partner_count": 1, "top_partners": [["Company1", 642]], "geographies": {}, "fx_signals": []}, "Dolly Card": {"total_volume": 98, "partner_count": 1, "top_partners": [["Dolly Card", 98]], "geographies": {}, "fx_signals": []}, "Sokin": {"total_volume": 58, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": []}, "Xflow": {"total_volume": 10, "partner_count": 1, "top_partners": [["Xflow Payments Inc.", 10]], "geographies": {}, "fx_signals": []}};
 let currentCompany='', currentResults=[], allFeedback=[], hubspotContext='', chatHistory=[];
 
 const PARTNER_DATA = [{"name": "HotelMize Project", "value": 28856834.55, "via": ["Go Global Travel"]}, {"name": "Housearch IT L.L.C XML", "value": 22177509.73, "via": ["Go Global Travel"]}, {"name": "TBO HOLIDAYS B2B WEB", "value": 13116352.45, "via": ["Go Global Travel"]}, {"name": "Go global travel", "value": 9380371.3, "via": ["Mize - Bedbank"]}, {"name": "TBO HOLIDAYS OE", "value": 6405545.04, "via": ["Go Global Travel"]}, {"name": "XML Russian express direct", "value": 5914729.94, "via": ["Go Global Travel"]}, {"name": "STUBA FULL", "value": 5859686.07, "via": ["Go Global Travel"]}, {"name": "OTTILA B2B - GGT", "value": 5145088.72, "via": ["Go Global Travel"]}, {"name": "HOLISTO SAFE DISTRIBUTION", "value": 4506985.31, "via": ["Go Global Travel"]}, {"name": "AZUL VIAGENS OE", "value": 4487542.45, "via": ["Go Global Travel"]}, {"name": "HOTELBEDS SPAIN, S.L.U", "value": 4398994.67, "via": ["Mize - Bedbank"]}, {"name": "BUBO Travel Agency SK", "value": 4287342.61, "via": ["Go Global Travel"]}, {"name": "Maringa Turismo (Sao Paulo) (BRL) (CORP-NET)", "value": 4077626.3, "via": ["Go Global Travel"]}, {"name": "Cisalpina Tours S.p.a.", "value": 3852364.69, "via": ["Go Global Travel"]}, {"name": "HOTELBEDS WEB XML", "value": 3581400.04, "via": ["Go Global Travel"]}, {"name": "Gezira Travel DMCC (Gtbeds) - GGT", "value": 3434900.74, "via": ["Go Global Travel"]}, {"name": "BookingAgora XML (WEB)", "value": 3405822.64, "via": ["Go Global Travel"]}, {"name": "W2M XML PRO HB", "value": 3345417.99, "via": ["Go Global Travel"]}, {"name": "STUBA DIRECT FULL OE", "value": 3290481.67, "via": ["Go Global Travel"]}, {"name": "RF TRAVEL GROUP", "value": 3261284.75, "via": ["Go Global Travel"]}, {"name": "One Two Trip XML B2B", "value": 3243763.03, "via": ["Go Global Travel"]}, {"name": "HOTELBEDS PKG XML", "value": 3151526.68, "via": ["Go Global Travel"]}, {"name": "UVET VIAGGI DIRECT - XML", "value": 3121697.94, "via": ["Go Global Travel"]}, {"name": "GERONIMO SOLUTIONS LLC dba OneSpare", "value": 2963447.19, "via": ["Go Global Travel"]}, {"name": "Eurotrips by Chris SA de CV.", "value": 2764909.54, "via": ["Go Global Travel"]}, {"name": "Ostrovok CUG", "value": 2704523.96, "via": ["Go Global Travel"]}, {"name": "TALI TOURS", "value": 2681274.22, "via": ["Go Global Travel"]}, {"name": "TRAVELTOOL VECI XML", "value": 2680641.15, "via": ["Go Global Travel"]}, {"name": "Air Partner Repulojegy es Utazasi Iroda Kft.", "value": 2591781.26, "via": ["Go Global Travel"]}, {"name": "TIK TIK SPORT B2B XML", "value": 2577826.85, "via": ["Go Global Travel"]}, {"name": "MOONLINE TRAVEL CUG RETAIL GGT XML", "value": 2528823.8, "via": ["Go Global Travel"]}, {"name": "Rezlive B2B", "value": 2452168.43, "via": ["Go Global Travel"]}, {"name": "LCI-MTC XML B2B WEB", "value": 2419937.32, "via": ["Go Global Travel"]}, {"name": "W2M XML CUG", "value": 2404219.33, "via": ["Go Global Travel"]}, {"name": "Privilege Turismo (Londrina) (BRL) (ANT)", "value": 2308571.17, "via": ["Go Global Travel"]}, {"name": "Maringa Turismo (Sao Paulo) (BRL) (12) (CORP-NET)", "value": 2266698.58, "via": ["Go Global Travel"]}, {"name": "ARBITRIP XML INHOUSE", "value": 2246926.58, "via": ["Go Global Travel"]}, {"name": "Booking Express XML GGT", "value": 2203637.21, "via": ["Go Global Travel"]}, {"name": "Almatar RA XML", "value": 2183428.93, "via": ["Go Global Travel"]}, {"name": "Destinations Of The World_NEW OE", "value": 2114422.68, "via": ["Go Global Travel"]}, {"name": "HOTELBEDS CUG XML", "value": 2082446.97, "via": ["Go Global Travel"]}, {"name": "CTRIP INTERNATIONAL b2b OE", "value": 2057262.91, "via": ["Go Global Travel"]}, {"name": "H-RESA WEB XML", "value": 2054210.11, "via": ["Go Global Travel"]}, {"name": "WELCOMEBEDS XML WEB - PLANET", "value": 2001097.37, "via": ["Go Global Travel"]}, {"name": "INTEREP TRAVELGATE", "value": 1956108.06, "via": ["Go Global Travel"]}, {"name": "Kontik Franstur (Sao Paulo) (PROJETO) (BRL) (CORP)", "value": 1851846.34, "via": ["Go Global Travel"]}, {"name": "LTA RA WL", "value": 1834312.24, "via": ["Go Global Travel"]}, {"name": "Viajes Turisticos Larre COMIS", "value": 1816737.36, "via": ["Go Global Travel"]}, {"name": "ISSTA BEPRO MEAN BRANCH XML", "value": 1761541.41, "via": ["Go Global Travel"]}, {"name": "Amadeus IT Group XML B2B", "value": 1745348.67, "via": ["Go Global Travel"]}, {"name": "BIZAWAY XML SRL", "value": 1687502.95, "via": ["Go Global Travel"]}, {"name": "IDEA Travel Solutions LLC", "value": 1662313.82, "via": ["Go Global Travel"]}, {"name": "Emerging Travel CUG B2C OE", "value": 1643183.45, "via": ["Go Global Travel"]}, {"name": "OFAKIM AGENT DIRECT", "value": 1542065.23, "via": ["Go Global Travel"]}, {"name": "FUN TOURS DIRECT", "value": 1534005.57, "via": ["Go Global Travel"]}, {"name": "sunhotels Travelgate_NEW OE", "value": 1497374.25, "via": ["Go Global Travel"]}, {"name": "Save On Resorts XML", "value": 1492048.21, "via": ["Go Global Travel"]}, {"name": "MAAC Travel Corporate (Belo Horizonte) (BRL) (CORP)", "value": 1470872.16, "via": ["Go Global Travel"]}, {"name": "GEKKO HOLDING XML WEB", "value": 1470272.24, "via": ["Go Global Travel"]}, {"name": "GLOTERA", "value": 1463664.35, "via": ["Go Global Travel"]}, {"name": "GRNCONNECT.COM XML WEB", "value": 1460427.8, "via": ["Go Global Travel"]}, {"name": "OSTROVOK B2B XML DIRECT PRODUCT", "value": 1451834.39, "via": ["Go Global Travel"]}, {"name": "AURUMTOURS VIA ANIXE", "value": 1449515.95, "via": ["Bedsopia"]}, {"name": "WELCOMEBEDS WEB  PLANET OE", "value": 1420363.24, "via": ["Go Global Travel"]}, {"name": "B&A e-Travel S.A. XML", "value": 1414992.94, "via": ["Go Global Travel"]}, {"name": "Arena Tickets - (Ex COLOMBUS TOURS)", "value": 1366319.76, "via": ["Go Global Travel"]}, {"name": "NUITEE TRAVEL (RETAIL) DIRECT OE", "value": 1338235.61, "via": ["Go Global Travel"]}, {"name": "UNIT.TRAVEL XML B2B", "value": 1330207.96, "via": ["Go Global Travel"]}, {"name": "AERO LPG RA", "value": 1322834.48, "via": ["Go Global Travel"]}, {"name": "HOTELBEDS B2B XML", "value": 1310423.67, "via": ["Go Global Travel"]}, {"name": "Viaje Mais Pague Menos (Vila Velha) (BRL) (ANT)", "value": 1296098.43, "via": ["Go Global Travel"]}, {"name": "Futurviaggi - GeG Travel S.r.l.", "value": 1294376.61, "via": ["Go Global Travel"]}, {"name": "RASHID TOURS RA", "value": 1278686.95, "via": ["Go Global Travel"]}, {"name": "100002 CUG", "value": 1267813.58, "via": ["Bedsopia"]}, {"name": "Emerging Travel Dynamic B2B OE", "value": 1266797.53, "via": ["Go Global Travel"]}, {"name": "OLYMPIA VIAGGI.BIZ XML", "value": 1250367.14, "via": ["Go Global Travel"]}, {"name": "NEXT TRAVEL XML B2B", "value": 1245451.79, "via": ["Go Global Travel"]}, {"name": "Cosmos Turismo (Jaragua do Sul) (BRL) (CORP)", "value": 1242988.96, "via": ["Go Global Travel"]}, {"name": "Golf Travel (Sao Paulo) (BRL) (NET-ANT)", "value": 1220819.87, "via": ["Go Global Travel"]}, {"name": "eTravel XML", "value": 1217130.29, "via": ["Go Global Travel"]}, {"name": "Ei Viajante (Atibaia) (ANT)", "value": 1181914.03, "via": ["Go Global Travel"]}, {"name": "EMPERIA TOURS LTD", "value": 1181771.87, "via": ["Go Global Travel"]}, {"name": "Omega Bookings RA XML (Eastern Travel Tours)", "value": 1172472.21, "via": ["Go Global Travel"]}, {"name": "Italcamel S.p.A. RA - XML", "value": 1163619.12, "via": ["Go Global Travel"]}, {"name": "NUITEE TRAVEL CUG_NEW JUNIPER", "value": 1160605.21, "via": ["Go Global Travel"]}, {"name": "FIND HOTEL B2B MEMBERS", "value": 1153540.86, "via": ["Go Global Travel"]}, {"name": "PLUM ACCOMMODATION XML RA", "value": 1152594.11, "via": ["Go Global Travel"]}, {"name": "JUAN TOSELLI INTL RA", "value": 1139298.09, "via": ["Go Global Travel"]}, {"name": "HERAKLIO TRAVEL DIRECTVISION XML", "value": 1121877.01, "via": ["Go Global Travel"]}, {"name": "PANGEA The Travel Store XML WEB", "value": 1115007.97, "via": ["Go Global Travel"]}, {"name": "ABREU VIAGENS XML WEB", "value": 1114136.72, "via": ["Go Global Travel"]}, {"name": "Ostrovok B.com", "value": 1112679.24, "via": ["Go Global Travel"]}, {"name": "Hunan Mengtu B2B Open", "value": 1103871.64, "via": ["Go Global Travel"]}, {"name": "GOELETT", "value": 1096004.18, "via": ["Go Global Travel"]}, {"name": "Gattinoni Network - XML RA", "value": 1079115.04, "via": ["Go Global Travel"]}, {"name": "VETURIS TRAVEL XML WEB", "value": 1069111.88, "via": ["Go Global Travel"]}, {"name": "Aktina Travel XML B2B GR", "value": 1068245.57, "via": ["Go Global Travel"]}, {"name": "OLYMPIA VIAGGI.IT XML", "value": 1061523.9, "via": ["Go Global Travel"]}, {"name": "OTTILA INTERNATIONAL DIRECT OE", "value": 1054546.67, "via": ["Go Global Travel"]}, {"name": "GRUPO AVIATUR MASTER", "value": 1048517.59, "via": ["Go Global Travel"]}, {"name": "NUITEE TRAVEL RETAIL_NEW JUNIPER", "value": 1047637.75, "via": ["Go Global Travel"]}, {"name": "STAY FOR LONG - PRIME - DIRECT - EUR OE", "value": 1046146.03, "via": ["Go Global Travel"]}, {"name": "Kasa Travel SIA", "value": 1034787.26, "via": ["Go Global Travel"]}, {"name": "JET TRAVEL KFT. HU", "value": 1024534.47, "via": ["Go Global Travel"]}, {"name": "INTER TRAVEL BULGARIA", "value": 1020978.71, "via": ["Go Global Travel"]}, {"name": "SKY LINE TRAVEL", "value": 1005589.93, "via": ["Go Global Travel"]}, {"name": "VTRAVELOR XML CARSOLIZE B2B", "value": 995261.25, "via": ["Go Global Travel"]}, {"name": "Sun Island Tours B2B XML Au.- GP Software", "value": 990999.17, "via": ["Go Global Travel"]}, {"name": "PLUM ACCOMMODATION XML EXPEDIA", "value": 987001.31, "via": ["Go Global Travel"]}, {"name": "Nirvana Travel&Tourism LLC B2B RA", "value": 985421.49, "via": ["Go Global Travel"]}, {"name": "LIKE SOLUTIONS", "value": 976788.18, "via": ["Go Global Travel"]}, {"name": "Travel Mama RO", "value": 974313.42, "via": ["Go Global Travel"]}, {"name": "AMSALEM TOURS XML ATRIIS", "value": 970645.38, "via": ["Go Global Travel"]}, {"name": "Ostrovok xml TPP", "value": 962857.86, "via": ["Go Global Travel"]}, {"name": "SIGNAL TOURS RAMAT HASHARON", "value": 960581.01, "via": ["Go Global Travel"]}, {"name": "Faditicket", "value": 960547.33, "via": ["Go Global Travel"]}, {"name": "NUITEE TRAVEL CUG DIRECT OE", "value": 943980.36, "via": ["Go Global Travel"]}, {"name": "GESTUR DR", "value": 934494.14, "via": ["Go Global Travel"]}, {"name": "ASIANA", "value": 899243.68, "via": ["Go Global Travel"]}, {"name": "Tripservice Agencia de Viagens e Turismo (Itajai) (BRL) (CORP)", "value": 895408.75, "via": ["Go Global Travel"]}, {"name": "Unique Holidays Bulgaria ltd.", "value": 893511.82, "via": ["Go Global Travel"]}, {"name": "MELIA TOURS", "value": 892944.99, "via": ["Go Global Travel"]}, {"name": "DELFOS TOUR xml", "value": 889555.96, "via": ["Go Global Travel"]}, {"name": "GBT MOL HU", "value": 880632.01, "via": ["Go Global Travel"]}, {"name": "ALPITOUR XTG DIRECT", "value": 878400.92, "via": ["Go Global Travel"]}, {"name": "INNSTANT B2B XML FEED", "value": 875287.5, "via": ["Go Global Travel"]}, {"name": "WECO TRAVEL SERVICE Sp. z o.o. . . .", "value": 869605.0, "via": ["Go Global Travel"]}, {"name": "JAS TRAVELS B2B XML", "value": 859296.44, "via": ["Go Global Travel"]}, {"name": "Methabook XML B2B", "value": 854112.93, "via": ["Go Global Travel"]}, {"name": "DHARMA-LINE  HU", "value": 847829.89, "via": ["Go Global Travel"]}, {"name": "VTRAVELOR B2B DIRECT PRODUCT", "value": 835126.37, "via": ["Go Global Travel"]}, {"name": "OGGI PARTO XML GGT", "value": 825826.27, "via": ["Go Global Travel"]}, {"name": "TRAVELLANDA WEB XML", "value": 819148.68, "via": ["Go Global Travel"]}, {"name": "AMERICAN EXECUTIVE XML WEB", "value": 815212.64, "via": ["Go Global Travel"]}, {"name": "FIND HOTEL MOBILE", "value": 811481.29, "via": ["Go Global Travel"]}, {"name": "XML Hotelstar plus", "value": 809323.72, "via": ["Go Global Travel"]}, {"name": "AVORIS TRAVELSENSE CORPORATE", "value": 808558.54, "via": ["Go Global Travel"]}, {"name": "Travel Trade Group B2B KOEDIA", "value": 808306.13, "via": ["Go Global Travel"]}, {"name": "AVEROJA", "value": 800562.39, "via": ["Go Global Travel"]}, {"name": "100000 B2B", "value": 799936.4, "via": ["Bedsopia"]}, {"name": "Ana Terra Tur (Sao Paulo) (BRL) (ANT)", "value": 795903.81, "via": ["Go Global Travel"]}, {"name": "NT INCOMING CUG OE XML", "value": 789447.5, "via": ["Go Global Travel"]}, {"name": "AMEX HERTZELIA xml", "value": 787949.73, "via": ["Go Global Travel"]}, {"name": "ST Travel", "value": 787475.79, "via": ["Go Global Travel"]}, {"name": "BESTOURS", "value": 784532.0, "via": ["Go Global Travel"]}, {"name": "Overseas Travel ROM", "value": 783944.4, "via": ["Go Global Travel"]}, {"name": "DAKA 90 CALL CENTER", "value": 782993.02, "via": ["Go Global Travel"]}, {"name": "Holisto - GG LM", "value": 778827.87, "via": ["Go Global Travel"]}, {"name": "MAZAL TRAVEL", "value": 773620.77, "via": ["Go Global Travel"]}, {"name": "AHMAD TOURS", "value": 769462.16, "via": ["Go Global Travel"]}, {"name": "ILLUSION B2B OE", "value": 766390.53, "via": ["Go Global Travel"]}, {"name": "Lithuania West Express", "value": 764847.47, "via": ["Go Global Travel"]}, {"name": "West Express XML", "value": 757465.95, "via": ["Go Global Travel"]}, {"name": "RECORD TOUR OPERATOR", "value": 742346.86, "via": ["American Executive International"]}, {"name": "Hostway Viagens (Sao Paulo) (BRL) (CORP)", "value": 735066.11, "via": ["Go Global Travel"]}, {"name": "TRAVEL GEA RA", "value": 732904.4, "via": ["Go Global Travel"]}, {"name": "XML HOTELSTAR", "value": 730048.33, "via": ["Go Global Travel"]}, {"name": "JET TRAVEL KEF admin HU", "value": 724468.88, "via": ["Go Global Travel"]}, {"name": "Avipam (Sao Paulo) (BRL) (CORP-NET)", "value": 716024.68, "via": ["Go Global Travel"]}, {"name": "WA Travel (Bauru) (BRL) (ANT)", "value": 714980.21, "via": ["Go Global Travel"]}, {"name": "Ottila B2B - HPT", "value": 714532.33, "via": ["Go Global Travel"]}, {"name": "Escalabeds Group LLC XML CUG", "value": 712021.34, "via": ["Go Global Travel"]}, {"name": "Ibusz KEF Travelsoft b2b XML HU", "value": 704042.91, "via": ["Go Global Travel"]}, {"name": "JUAN TOSELLI INTL 2025 GGT", "value": 700431.34, "via": ["Go Global Travel"]}, {"name": "Aviatur Medellin", "value": 695837.38, "via": ["Go Global Travel"]}, {"name": "Jules Verne Travel & Event RA", "value": 694108.53, "via": ["Go Global Travel"]}, {"name": "Japan See", "value": 688173.97, "via": ["Go Global Travel"]}, {"name": "Air Tour RA (B2B GGT)", "value": 684574.81, "via": ["Go Global Travel"]}, {"name": "BALI TOURS RA", "value": 684154.53, "via": ["Go Global Travel"]}, {"name": "Club Jolly Turizm Ve Ticaret A.S  RA", "value": 679245.0, "via": ["Go Global Travel"]}, {"name": "TRAVELTOOL RETAIL OE", "value": 678572.92, "via": ["Go Global Travel"]}, {"name": "STAY FOR LONG - MOBILE - DIRECT - EUR OE", "value": 677990.15, "via": ["Go Global Travel"]}, {"name": "TANCHEV & CO LTD", "value": 673158.3, "via": ["Go Global Travel"]}, {"name": "OLA MB XML NEMO", "value": 671853.71, "via": ["Go Global Travel"]}, {"name": "XML Hotelstar minus", "value": 665028.12, "via": ["Go Global Travel"]}, {"name": "Olympia Viaggi TO SRL XML RA", "value": 662548.43, "via": ["Go Global Travel"]}, {"name": "Swiss Interglobe", "value": 658452.62, "via": ["Go Global Travel"]}, {"name": "3 Travel (Sao Paulo) (BRL) (ANT)", "value": 654750.61, "via": ["Go Global Travel"]}, {"name": "Gaertner Reisen GmbH", "value": 650698.63, "via": ["Go Global Travel"]}, {"name": "NADLAN TOURS", "value": 649080.77, "via": ["Go Global Travel"]}, {"name": "Primebauru Turismo Personalizado (Bauru) (BRL) (ANT)", "value": 642280.25, "via": ["Go Global Travel"]}, {"name": "Luciana Nucci Viagens (Araraquara) (BRL) (NET-ANT)", "value": 640463.99, "via": ["Go Global Travel"]}, {"name": "Dimmi Dove e Quando", "value": 639279.37, "via": ["Go Global Travel"]}, {"name": "AMEX IAI xml BEPRO", "value": 638426.63, "via": ["Go Global Travel"]}, {"name": "MSC ITALY", "value": 637649.56, "via": ["Go Global Travel"]}, {"name": "TENTOURS D.O.O.", "value": 636571.33, "via": ["Go Global Travel"]}, {"name": "AIR TOUR LV (RA)", "value": 634206.4, "via": ["Go Global Travel"]}, {"name": "STAYFORLONG PRIME B2B", "value": 633134.34, "via": ["Bedsopia"]}, {"name": "HQ by Itravel B2B xml Au. - DCS PLUS", "value": 630812.75, "via": ["Go Global Travel"]}, {"name": "Kiwi Travel S.r.l.", "value": 627968.7, "via": ["Go Global Travel"]}, {"name": "Belvitur Viagens e Turismo (Belo Horizonte) (BRL) (CORP)", "value": 626231.21, "via": ["Go Global Travel"]}, {"name": "TTS MB XML", "value": 625396.12, "via": ["Go Global Travel"]}, {"name": "Tour 2000 Tour Operator", "value": 621596.47, "via": ["Go Global Travel"]}, {"name": "JETMAR UTG GGT B2B RA", "value": 621394.64, "via": ["Go Global Travel"]}, {"name": "Doppia V S.r.l.", "value": 619645.63, "via": ["Go Global Travel"]}, {"name": "KIY AVIA", "value": 619004.43, "via": ["Go Global Travel"]}, {"name": "WAMOS GROUP Portugal XML WEB", "value": 615779.83, "via": ["Go Global Travel"]}, {"name": "BTC DIESENHAUS ASAKIM", "value": 615522.87, "via": ["Go Global Travel"]}, {"name": "Alabanda (LCC) RA", "value": 613638.32, "via": ["Go Global Travel"]}, {"name": "ELITE TRAVEL GB", "value": 613360.27, "via": ["Go Global Travel"]}];
@@ -194,7 +237,7 @@ const PARTNER_CONTEXT = "KNOWN PARTNER ECOSYSTEM (real companies transacting wit
 
 
 // Init
-document.getElementById('customer-chips').innerHTML=CUSTOMERS.map(c=>`<span class="customer-chip" onclick="useCustomer('${c}')">${c}</span>`).join('');
+document.getElementById('customer-chips').innerHTML=CUSTOMERS.map(c=>`<span class="customer-chip" onclick="openCustomerModal('${c}')">${c}</span>`).join('');
 document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
 
@@ -563,6 +606,105 @@ function renderPartners() {
 }
 
 document.getElementById('partner-search').addEventListener('input', renderPartners);
+
+
+let modalCustomer = '';
+
+function openCustomerModal(name) {
+  modalCustomer = name;
+  const profile = CUSTOMER_PROFILES[name];
+  
+  document.getElementById('cm-name').textContent = name;
+  
+  if (!profile) {
+    document.getElementById('cm-subtitle').textContent = 'No transaction data available';
+    document.getElementById('cm-stats').innerHTML = '';
+    document.getElementById('cm-fx').innerHTML = '<span style="color:#999;font-size:13px">No data available for this customer yet.</span>';
+    document.getElementById('cm-geo').innerHTML = '';
+    document.getElementById('cm-partners').innerHTML = '';
+    document.getElementById('customer-modal').style.display = 'flex';
+    return;
+  }
+
+  document.getElementById('cm-subtitle').textContent = `${profile.partner_count.toLocaleString()} partner companies · Last 90 days`;
+
+  // Stats
+  document.getElementById('cm-stats').innerHTML = `
+    <div style="background:#f4f6fb;border-radius:10px;padding:14px">
+      <div style="font-size:11px;color:#999;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Transaction Volume</div>
+      <div style="font-size:22px;font-weight:700;color:#4B6EF5;font-family:'DM Mono',monospace">$${(profile.total_volume/1000000).toFixed(1)}M</div>
+      <div style="font-size:11px;color:#999;margin-top:2px">last 90 days</div>
+    </div>
+    <div style="background:#f4f6fb;border-radius:10px;padding:14px">
+      <div style="font-size:11px;color:#999;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Partner Network</div>
+      <div style="font-size:22px;font-weight:700;color:#4B6EF5;font-family:'DM Mono',monospace">${profile.partner_count.toLocaleString()}</div>
+      <div style="font-size:11px;color:#999;margin-top:2px">active partners</div>
+    </div>
+  `;
+
+  // FX signals
+  const fxColors = {'Multi-currency operations':'#EEF2FF','Cross-border trade':'#E8F5E9','International customer base':'#FFF3E0','High FX volume':'#FCE4EC','Large partner network':'#E3F2FD'};
+  const fxText = {'Multi-currency operations':'#4B6EF5','Cross-border trade':'#2e7d32','International customer base':'#e65100','High FX volume':'#c62828','Large partner network':'#0277bd'};
+  
+  if (profile.fx_signals && profile.fx_signals.length) {
+    document.getElementById('cm-fx').innerHTML = profile.fx_signals.map(s =>
+      `<span style="font-size:12px;padding:5px 12px;border-radius:20px;background:${fxColors[s]||'#EEF2FF'};color:${fxText[s]||'#4B6EF5'};font-weight:500">${s}</span>`
+    ).join('');
+  } else {
+    document.getElementById('cm-fx').innerHTML = '<span style="color:#999;font-size:13px">No FX signals detected</span>';
+  }
+
+  // Geographies
+  const geoSection = document.getElementById('cm-geo-section');
+  const geoEl = document.getElementById('cm-geo');
+  if (profile.geographies && Object.keys(profile.geographies).length) {
+    geoSection.style.display = 'block';
+    const totalGeo = Object.values(profile.geographies).reduce((a,b)=>a+b,0);
+    geoEl.innerHTML = Object.entries(profile.geographies)
+      .sort((a,b) => b[1]-a[1])
+      .map(([geo, count]) => {
+        const pct = Math.round(count/totalGeo*100);
+        return `<div style="display:flex;align-items:center;gap:8px;width:100%">
+          <span style="font-size:13px;font-weight:500;color:#111;width:120px">${geo}</span>
+          <div style="flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:#4B6EF5;border-radius:3px"></div>
+          </div>
+          <span style="font-size:12px;color:#555;width:60px;text-align:right">${count} partners</span>
+        </div>`;
+      }).join('');
+  } else {
+    geoSection.style.display = 'none';
+  }
+
+  // Top partners
+  if (profile.top_partners && profile.top_partners.length) {
+    const maxVal = profile.top_partners[0][1];
+    document.getElementById('cm-partners').innerHTML = profile.top_partners.map(([name, val]) => {
+      const pct = Math.round(val/maxVal*100);
+      return `<div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;color:#111;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${name}">${name}</span>
+        <div style="width:120px;height:5px;background:#eee;border-radius:3px;overflow:hidden;flex-shrink:0">
+          <div style="width:${pct}%;height:100%;background:#4B6EF5;border-radius:3px"></div>
+        </div>
+        <span style="font-size:12px;color:#555;font-family:'DM Mono',monospace;width:70px;text-align:right;flex-shrink:0">$${(val/1000).toFixed(0)}k</span>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('cm-partners').innerHTML = '<span style="color:#999;font-size:13px">No partner data available</span>';
+  }
+
+  document.getElementById('customer-modal').style.display = 'flex';
+}
+
+function closeCustomerModal() {
+  document.getElementById('customer-modal').style.display = 'none';
+}
+
+function searchFromModal() {
+  closeCustomerModal();
+  document.getElementById('search-input').value = modalCustomer;
+  doSearch();
+}
 
 let toastTimer;
 function showToast(msg,ok=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(ok?' ok':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='toast',2500);}
