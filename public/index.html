@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lead Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0a0c0f;--surface:#111318;--surface2:#181c22;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#eef0f4;--muted:#7a8394;--accent:#00e5a0;--accent2:#0077ff;--danger:#ff4d4d;--gold:#f5c842;--green:#00e5a0;--red:#ff4d4d;--radius:10px;--radius-lg:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,160,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 24px}
+
+/* Header */
+header{margin-bottom:48px}
+.logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.03em;margin-bottom:6px}
+.logo span{color:var(--accent)}
+.subtitle{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* Search box */
+.search-wrap{margin-bottom:40px}
+.search-label{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.search-box{display:flex;gap:10px;align-items:stretch}
+.search-input{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px 20px;font-size:16px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
+.search-input:focus{border-color:rgba(0,229,160,0.5);box-shadow:0 0 0 3px rgba(0,229,160,0.08)}
+.search-input::placeholder{color:var(--muted)}
+.search-btn{background:var(--accent);color:#000;border:none;border-radius:var(--radius-lg);padding:16px 28px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:.15s;white-space:nowrap}
+.search-btn:hover{background:#00ffb3}
+.search-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Customer chips */
+.customers-wrap{margin-bottom:8px}
+.customers-label{font-size:11px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
+.customer-chips{display:flex;flex-wrap:wrap;gap:6px}
+.customer-chip{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;transition:.15s;background:transparent;font-family:'DM Sans',sans-serif}
+.customer-chip:hover{border-color:rgba(0,229,160,0.4);color:var(--accent)}
+
+/* Results */
+.results-section{margin-top:8px}
+.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.results-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:600}
+.results-title span{color:var(--accent)}
+.results-meta{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+/* Reasoning box */
+.reasoning-box{background:var(--surface);border:1px solid rgba(0,229,160,0.15);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px}
+.reasoning-label{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.reasoning-text{font-size:13px;color:var(--muted);line-height:1.7}
+.similar-to{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sim-chip{font-size:11px;padding:3px 9px;border-radius:4px;background:rgba(0,229,160,0.08);color:var(--accent);border:1px solid rgba(0,229,160,0.2)}
+
+/* Lead card */
+.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:12px;transition:.2s;position:relative;overflow:hidden}
+.lead-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;opacity:0;transition:.2s}
+.lead-card:hover{border-color:var(--border2)}
+.lead-card:hover::before{opacity:1;background:var(--accent)}
+.lead-card.rated-good::before{opacity:1;background:var(--green)}
+.lead-card.rated-bad::before{opacity:1;background:var(--red)}
+.lead-card.rated-good{border-color:rgba(0,229,160,0.2)}
+.lead-card.rated-bad{border-color:rgba(255,77,77,0.15)}
+
+.lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.lead-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:600}
+.lead-domain{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:3px}
+.lead-score{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;color:var(--accent);line-height:1;text-align:right;flex-shrink:0}
+.lead-score-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+
+.lead-why{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.lead-similarity{font-size:12px;color:var(--text);margin-bottom:14px;line-height:1.6}
+.lead-similarity strong{color:var(--accent);font-weight:500}
+
+.score-bar{height:2px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;margin-bottom:16px}
+.score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+
+/* Feedback row */
+.feedback-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rating-btns{display:flex;gap:6px}
+.rating-btn{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid var(--border2);cursor:pointer;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:.15s;display:flex;align-items:center;gap:5px}
+.rating-btn:hover{border-color:var(--border2);color:var(--text)}
+.rating-btn.good.active{background:rgba(0,229,160,0.12);border-color:rgba(0,229,160,0.35);color:var(--green)}
+.rating-btn.bad.active{background:rgba(255,77,77,0.1);border-color:rgba(255,77,77,0.3);color:var(--red)}
+
+.status-select{padding:5px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none}
+.status-select:focus{border-color:rgba(0,229,160,0.3)}
+
+.note-wrap{flex:1;min-width:150px}
+.note-input{width:100%;padding:5px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:.15s}
+.note-input:focus{border-color:rgba(0,229,160,0.3)}
+.note-input::placeholder{color:var(--muted)}
+
+.save-note-btn{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid rgba(0,229,160,0.25);background:rgba(0,229,160,0.06);color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.save-note-btn:hover{background:rgba(0,229,160,0.14)}
+
+/* Load more */
+.load-more-wrap{text-align:center;margin-top:20px}
+.load-more-btn{padding:11px 32px;font-size:13px;border-radius:var(--radius-lg);border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.load-more-btn:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
+.load-more-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Loading */
+.loading{display:flex;flex-direction:column;gap:16px;padding:40px 0}
+.loading-step{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted);opacity:.3;transition:opacity .3s}
+.loading-step.active{opacity:1;color:var(--text)}
+.loading-step.done{opacity:.5;color:var(--accent)}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:.3s}
+.loading-step.active .step-dot{background:var(--accent);box-shadow:0 0 8px rgba(0,229,160,0.6);animation:pulse .8s ease-in-out infinite alternate}
+.loading-step.done .step-dot{background:var(--accent)}
+@keyframes pulse{from{opacity:.5}to{opacity:1}}
+
+/* Empty / error */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:32px;margin-bottom:12px}
+.empty-title{font-family:'Syne',sans-serif;font-size:15px;color:var(--text);margin-bottom:6px}
+.empty-sub{font-size:13px;line-height:1.6}
+.error-msg{color:var(--danger);font-size:13px;padding:16px;background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.15);border-radius:var(--radius);margin-top:16px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 18px;font-size:13px;opacity:0;transition:.2s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(0,229,160,0.3);color:var(--accent)}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">Lead<span>Finder</span></div>
+    <div class="subtitle">Type any company · find who looks like them</div>
+  </header>
+
+  <div class="search-wrap">
+    <div class="search-label">Find lookalikes for</div>
+    <div class="search-box">
+      <input class="search-input" id="search-input" type="text" placeholder="e.g. Transfermate, Rayna Tours, or any company..." autocomplete="off"/>
+      <button class="search-btn" id="search-btn" onclick="search()">Find lookalikes</button>
+    </div>
+    <div style="margin-top:14px">
+      <div class="customers-label">Your customers</div>
+      <div class="customer-chips" id="customer-chips"></div>
+    </div>
+  </div>
+
+  <div id="results-section"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CUSTOMERS = [
+  "12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba",
+  "Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation",
+  "American International Executive","Bedsopia","Damisa","Dubai Link",
+  "Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo"
+];
+
+let currentCompany = '';
+let currentResults = [];
+let allFeedback = [];
+
+// Render customer chips
+document.getElementById('customer-chips').innerHTML = CUSTOMERS.map(c =>
+  `<span class="customer-chip" onclick="useCustomer('${c}')">${c}</span>`
+).join('');
+
+function useCustomer(name) {
+  document.getElementById('search-input').value = name;
+  document.getElementById('search-input').focus();
+}
+
+// Load all feedback on start
+async function loadFeedback() {
+  try {
+    const res = await fetch('/api/feedback');
+    allFeedback = await res.json();
+  } catch(e) { allFeedback = []; }
+}
+loadFeedback();
+
+function getFeedbackFor(leadName, searchedCompany) {
+  return allFeedback.find(f => f.leadName === leadName && f.searchedCompany === searchedCompany) || null;
+}
+
+// Build feedback context string for the prompt
+function buildFeedbackContext() {
+  if (!allFeedback.length) return '';
+  const good = allFeedback.filter(f => f.rating === 'good');
+  const bad = allFeedback.filter(f => f.rating === 'bad');
+  let ctx = '\n\nLEARNED FEEDBACK FROM PAST SEARCHES (use this to improve results):\n';
+  if (good.length) ctx += 'Good leads found previously: ' + good.map(f => f.leadName + (f.note ? ' ('+f.note+')' : '')).join(', ') + '\n';
+  if (bad.length) ctx += 'Bad leads to avoid (and similar ones): ' + bad.map(f => f.leadName + (f.note ? ' because: '+f.note : '')).join(', ') + '\n';
+  return ctx;
+}
+
+async function search(loadMore = false) {
+  const company = document.getElementById('search-input').value.trim();
+  if (!company) { showToast('Enter a company name'); return; }
+
+  currentCompany = company;
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true;
+
+  if (!loadMore) {
+    currentResults = [];
+    showLoading(company);
+  } else {
+    const lmBtn = document.getElementById('load-more-btn');
+    if (lmBtn) { lmBtn.disabled = true; lmBtn.textContent = 'Loading...'; }
+  }
+
+  const alreadyFound = currentResults.map(r => r.name);
+  const feedbackCtx = buildFeedbackContext();
+
+  // Step 1: Sonnet profiles the company + understands which customers it resembles
+  if (!loadMore) updateStep(1);
+
+  const profilePrompt = `You are a business analyst. Research this company: "${company}"
+
+Your customer list for reference:
+${CUSTOMERS.join(', ')}
+
+Task:
+1. Understand what "${company}" does — their business model, industry, who their customers are, how they operate internationally
+2. Identify which of the listed customers they most resemble and WHY specifically
+3. Extract the key traits that define "${company}" as a sales target
+
+Return ONLY valid JSON:
+{
+  "name": "official company name",
+  "description": "2-3 sentence description of what they do",
+  "segment": "1 sentence describing what type of company this is",
+  "similar_to": ["list of customer names from the list that are most similar"],
+  "similarity_reasons": "2-3 sentences explaining specifically why they are similar to those customers",
+  "key_traits": ["4-6 specific traits that define this company as a target, be very specific"],
+  "what_to_look_for": "1-2 sentences describing exactly what kind of company would be a lookalike"
+}`;
+
+  try {
+    const r1 = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-5-20250929', max_tokens: 800, messages: [{ role: 'user', content: profilePrompt }] })
+    });
+    const d1 = await r1.json();
+    const profileText = (d1.content || []).find(b => b.type === 'text')?.text || '';
+    const profile = JSON.parse(profileText.replace(/```json|```/g, '').trim());
+
+    if (!loadMore) updateStep(2);
+
+    // Step 2: Haiku finds lookalikes using the profile + feedback
+    const count = 8;
+    const lookalikesPrompt = `You are a B2B sales intelligence tool.
+
+Find ${count} real companies that are strong lookalikes to "${profile.name}".
+
+PROFILE OF TARGET:
+- Description: ${profile.description}
+- Segment: ${profile.segment}  
+- Key traits: ${profile.key_traits.join('; ')}
+- What to look for: ${profile.what_to_look_for}
+${feedbackCtx}
+${alreadyFound.length ? 'ALREADY SHOWN (do not repeat): ' + alreadyFound.join(', ') : ''}
+
+Rules:
+- Real, specific companies only
+- Growth-stage or mid-market (not household giants)
+- Do NOT include "${profile.name}" itself
+- Each must genuinely match the profile traits
+- Explain specifically how each is similar to the profile
+
+Return ONLY valid JSON array:
+[{
+  "name": "",
+  "domain": "",
+  "hq": "City, Country",
+  "description": "1 sentence on what they do",
+  "why_similar": "2 sentences: specifically how this company matches the profile and key traits",
+  "fit_score": 0
+}]`;
+
+    const r2 = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2500, messages: [{ role: 'user', content: lookalikesPrompt }] })
+    });
+    const d2 = await r2.json();
+    const text2 = (d2.content || []).find(b => b.type === 'text')?.text || '';
+    const newLeads = parseJSON(text2);
+
+    if (loadMore) {
+      currentResults = [...currentResults, ...newLeads];
+    } else {
+      currentResults = newLeads;
+      if (!loadMore) updateStep(3);
+    }
+
+    renderResults(profile, currentResults, !loadMore);
+  } catch(e) {
+    document.getElementById('results-section').innerHTML = `<div class="error-msg">Error: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Find lookalikes';
+  }
+}
+
+function updateStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('step-' + i);
+    if (!el) continue;
+    el.classList.remove('active', 'done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  }
+}
+
+function showLoading(company) {
+  document.getElementById('results-section').innerHTML = `
+    <div class="loading">
+      <div class="loading-step active" id="step-1"><div class="step-dot"></div>Researching ${company}...</div>
+      <div class="loading-step" id="step-2"><div class="step-dot"></div>Matching against your 21 customers...</div>
+      <div class="loading-step" id="step-3"><div class="step-dot"></div>Finding lookalikes...</div>
+    </div>`;
+}
+
+function renderResults(profile, leads, isFirst) {
+  const sorted = [...leads].sort((a, b) => b.fit_score - a.fit_score);
+
+  let html = '';
+
+  if (isFirst) {
+    html += `
+    <div class="results-header">
+      <div>
+        <div class="results-title">Lookalikes for <span>${profile.name}</span></div>
+        <div class="results-meta">${profile.segment}</div>
+      </div>
+    </div>
+    <div class="reasoning-box">
+      <div class="reasoning-label">Why these results</div>
+      <div class="reasoning-text">${profile.similarity_reasons || profile.description}</div>
+      ${profile.similar_to && profile.similar_to.length ? `
+        <div style="margin-top:10px;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Most similar to your customers</div>
+        <div class="similar-to">${profile.similar_to.map(s => `<span class="sim-chip">${s}</span>`).join('')}</div>
+      ` : ''}
+    </div>`;
+  }
+
+  html += sorted.map(lead => {
+    const fb = getFeedbackFor(lead.name, currentCompany);
+    const pct = Math.min(99, Math.max(30, lead.fit_score || 75));
+    const cardClass = fb?.rating === 'good' ? 'rated-good' : fb?.rating === 'bad' ? 'rated-bad' : '';
+    const goodActive = fb?.rating === 'good' ? 'active' : '';
+    const badActive = fb?.rating === 'bad' ? 'active' : '';
+    const statusVal = fb?.status || 'new';
+    const noteVal = fb?.note || '';
+    const safeId = lead.name.replace(/[^a-z0-9]/gi, '-');
+
+    return `
+    <div class="lead-card ${cardClass}" id="card-${safeId}">
+      <div class="lead-top">
+        <div>
+          <div class="lead-name">${lead.name}</div>
+          <div class="lead-domain">${lead.domain || ''} · ${lead.hq || ''}</div>
+        </div>
+        <div>
+          <div class="lead-score">${pct}</div>
+          <div class="lead-score-label">fit score</div>
+        </div>
+      </div>
+      <div class="lead-similarity">${lead.why_similar || ''}</div>
+      <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
+      <div class="feedback-row">
+        <div class="rating-btns">
+          <button class="rating-btn good ${goodActive}" onclick="rate('${lead.name}','${lead.domain||''}','good',this)">👍 Good lead</button>
+          <button class="rating-btn bad ${badActive}" onclick="rate('${lead.name}','${lead.domain||''}','bad',this)">👎 Bad lead</button>
+        </div>
+        <select class="status-select" id="status-${safeId}" onchange="saveStatus('${lead.name}',this.value)">
+          <option value="new" ${statusVal==='new'?'selected':''}>New</option>
+          <option value="contacted" ${statusVal==='contacted'?'selected':''}>Contacted</option>
+          <option value="won" ${statusVal==='won'?'selected':''}>Won</option>
+          <option value="lost" ${statusVal==='lost'?'selected':''}>Lost</option>
+        </select>
+        <div class="note-wrap">
+          <input class="note-input" id="note-${safeId}" type="text" placeholder="Add a note..." value="${noteVal}"/>
+        </div>
+        <button class="save-note-btn" onclick="saveNote('${lead.name}','${lead.domain||''}','${safeId}')">Save</button>
+        ${lead.domain ? `<button class="rating-btn" onclick="window.open('https://${lead.domain}','_blank')">↗</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  html += `
+  <div class="load-more-wrap">
+    <button class="load-more-btn" id="load-more-btn" onclick="search(true)">Load more lookalikes</button>
+  </div>`;
+
+  if (isFirst) {
+    document.getElementById('results-section').innerHTML = `<div class="results-section">${html}</div>`;
+  } else {
+    // Append new cards before load more button
+    const lmWrap = document.querySelector('.load-more-wrap');
+    const newCards = document.createElement('div');
+    newCards.innerHTML = sorted.slice(sorted.length - (currentResults.length - sorted.length + sorted.length)).map(lead => {
+      // just re-render all and replace
+      return '';
+    }).join('');
+    // Simpler: just re-render the whole section
+    document.getElementById('results-section').innerHTML = `<div class="results-section">${html}</div>`;
+  }
+}
+
+async function rate(leadName, domain, rating, btn) {
+  const safeId = leadName.replace(/[^a-z0-9]/gi, '-');
+  const note = document.getElementById('note-' + safeId)?.value || '';
+  const status = document.getElementById('status-' + safeId)?.value || 'new';
+
+  // Toggle off if already active
+  const isToggleOff = btn.classList.contains('active');
+  const newRating = isToggleOff ? null : rating;
+
+  try {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadName, domain, searchedCompany: currentCompany, rating: newRating, note, status })
+    });
+
+    // Update local feedback
+    const idx = allFeedback.findIndex(f => f.leadName === leadName && f.searchedCompany === currentCompany);
+    const entry = { leadName, domain, searchedCompany: currentCompany, rating: newRating, note, status };
+    if (idx > -1) allFeedback[idx] = entry; else allFeedback.push(entry);
+
+    // Update UI
+    const card = document.getElementById('card-' + safeId);
+    if (card) {
+      card.classList.remove('rated-good', 'rated-bad');
+      if (newRating === 'good') card.classList.add('rated-good');
+      if (newRating === 'bad') card.classList.add('rated-bad');
+    }
+    card.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+    if (newRating) btn.classList.add('active');
+
+    showToast(newRating ? (newRating === 'good' ? '👍 Marked as good lead' : '👎 Marked as bad lead') : 'Rating removed', !!newRating);
+  } catch(e) { showToast('Error saving feedback'); }
+}
+
+async function saveNote(leadName, domain, safeId) {
+  const note = document.getElementById('note-' + safeId)?.value || '';
+  const status = document.getElementById('status-' + safeId)?.value || 'new';
+  const fb = getFeedbackFor(leadName, currentCompany);
+  const rating = fb?.rating || null;
+
+  try {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadName, domain, searchedCompany: currentCompany, rating, note, status })
+    });
+    const idx = allFeedback.findIndex(f => f.leadName === leadName && f.searchedCompany === currentCompany);
+    const entry = { leadName, domain, searchedCompany: currentCompany, rating, note, status };
+    if (idx > -1) allFeedback[idx] = entry; else allFeedback.push(entry);
+    showToast('Note saved', true);
+  } catch(e) { showToast('Error saving note'); }
+}
+
+async function saveStatus(leadName, status) {
+  try {
+    await fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadName, searchedCompany: currentCompany, status })
+    });
+    const idx = allFeedback.findIndex(f => f.leadName === leadName && f.searchedCompany === currentCompany);
+    if (idx > -1) allFeedback[idx].status = status;
+    else allFeedback.push({ leadName, searchedCompany: currentCompany, status, rating: null, note: '' });
+    showToast('Status updated', true);
+  } catch(e) { showToast('Error saving status'); }
+}
+
+function parseJSON(text) {
+  const clean = text.replace(/```json|```/g, '').trim();
+  try { return JSON.parse(clean); } catch(e) {}
+  const start = clean.indexOf('[');
+  if (start === -1) throw new Error('No results returned');
+  let end = clean.lastIndexOf('}');
+  while (end > start) {
+    try {
+      const attempt = clean.slice(start, end + 1) + ']';
+      const parsed = JSON.parse(attempt);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch(e) {}
+    end = clean.lastIndexOf('}', end - 1);
+  }
+  throw new Error('Could not parse results');
+}
+
+// Enter key triggers search
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') search();
+});
+
+let toastTimer;
+function showToast(msg, ok = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (ok ? ' ok' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast', 2500);
+}
+</script>
+</body>
+</html>
