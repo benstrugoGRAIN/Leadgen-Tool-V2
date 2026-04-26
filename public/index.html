@@ -128,15 +128,12 @@ header{margin-bottom:48px}
 .msg-thinking{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;padding:8px 0;animation:pulse 1s ease-in-out infinite alternate}
 .suggestion-chip{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:.15s;white-space:nowrap}
 .suggestion-chip:hover{border-color:rgba(0,229,160,0.3);color:var(--accent)}
-@media(max-width:1000px){#assistant-panel{display:none}}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 </style>
 </head>
 <body>
-<div class="app" style="max-width:1300px">
-<div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start">
-<div id="main-col">
+<div class="app">
   <header>
     <div class="logo">Lead<span>Finder</span></div>
     <div class="subtitle">Type any company · find who looks like them</div>
@@ -156,34 +153,39 @@ header{margin-bottom:48px}
   </div>
 
   <div id="results-section"></div>
-</div><!-- end main-col -->
-
 <!-- Assistant Panel -->
-<div id="assistant-panel" style="position:sticky;top:24px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+<!-- Floating chat button -->
+<button id="chat-toggle" onclick="toggleChat()" style="position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,229,160,0.3);z-index:300;transition:.2s">
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2C6.03 2 2 5.58 2 10C2 12.1 2.9 14 4.4 15.4L3 20L7.8 18.3C8.8 18.75 9.87 19 11 19C15.97 19 20 15.42 20 11C20 6.58 15.97 2 11 2Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/></svg>
+</button>
+
+<!-- Chat drawer -->
+<div id="assistant-panel" style="position:fixed;bottom:92px;right:28px;width:380px;max-height:560px;z-index:299;display:none;flex-direction:column;border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.4);border:1px solid var(--border2)">
+  <div style="background:var(--surface);flex:1;display:flex;flex-direction:column">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div>
-        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">AI Assistant</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace">Ask anything about your leads</div>
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text)">AI Assistant</div>
+        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Ask anything about your leads</div>
       </div>
-      <button onclick="clearChat()" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:'DM Mono',monospace">Clear</button>
+      <div style="display:flex;gap:6px">
+        <button onclick="clearChat()" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:'DM Mono',monospace">Clear</button>
+        <button onclick="toggleChat()" style="font-size:16px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0 4px;line-height:1">×</button>
+      </div>
     </div>
-    <div id="chat-messages" style="height:420px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;max-height:360px">
       <div class="chat-msg assistant">
-        <div class="msg-bubble assistant-bubble">Hi! I know your 21 customers, your HubSpot deals, and your search history. Ask me anything — like "which verticals are we winning?" or "what should I search for next?"</div>
+        <div class="msg-bubble assistant-bubble">Hi! I know your 21 customers, your HubSpot deals, and your search history. Ask me anything!</div>
       </div>
     </div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border)">
-      <div style="display:flex;gap:8px">
-        <input type="text" id="chat-input" placeholder="Ask a question..." style="flex:1;padding:9px 12px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);outline:none;font-family:'DM Sans',sans-serif"/>
-        <button onclick="sendChat()" id="chat-btn" style="padding:9px 16px;background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap">Ask</button>
+    <div style="padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input type="text" id="chat-input" placeholder="Ask a question..." style="flex:1;padding:8px 11px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);outline:none;font-family:'DM Sans',sans-serif"/>
+        <button onclick="sendChat()" id="chat-btn" style="padding:8px 14px;background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif">Ask</button>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px" id="chat-suggestions"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="chat-suggestions"></div>
     </div>
   </div>
 </div>
-
-</div><!-- end grid -->
 
 <div class="toast" id="toast"></div>
 
@@ -599,6 +601,13 @@ renderSuggestions();
 function useSuggestion(text) {
   document.getElementById('chat-input').value = text;
   sendChat();
+}
+
+function toggleChat() {
+  const panel = document.getElementById('assistant-panel');
+  const isOpen = panel.style.display === 'flex';
+  panel.style.display = isOpen ? 'none' : 'flex';
+  panel.style.flexDirection = 'column';
 }
 
 function clearChat() {
