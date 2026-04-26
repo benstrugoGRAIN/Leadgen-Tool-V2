@@ -129,6 +129,7 @@ header{margin-bottom:48px}
   <header>
     <div class="logo">Lead<span>Finder</span></div>
     <div class="subtitle">Type any company · find who looks like them</div>
+  <div id="hs-status" style="margin-top:10px;font-size:11px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:10px;flex-wrap:wrap"></div>
   </header>
 
   <div class="search-wrap">
@@ -149,6 +150,43 @@ header{margin-bottom:48px}
 <div class="toast" id="toast"></div>
 
 <script>
+let hubspotContext = '';
+let hubspotSummary = null;
+
+async function loadHubspotContext() {
+  try {
+    const res = await fetch('/api/hubspot-context');
+    const data = await res.json();
+    if (data.available) {
+      hubspotContext = data.context || '';
+      hubspotSummary = data.summary;
+      const el = document.getElementById('hs-status');
+      const age = data.syncedAt ? new Date(data.syncedAt).toLocaleDateString() : 'unknown';
+      el.innerHTML = `
+        <span style="color:var(--accent)">● HubSpot connected</span>
+        <span style="color:var(--muted)">${data.summary.wonDeals} won · ${data.summary.lostDeals} lost · ${data.summary.activeDeals} active deals</span>
+        <span style="color:var(--muted)">Last sync: ${age}</span>
+        <button onclick="manualSync()" style="background:none;border:1px solid var(--border2);color:var(--muted);padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace">↻ Sync now</button>
+      `;
+    } else {
+      document.getElementById('hs-status').innerHTML = '<span style="color:var(--muted)">○ HubSpot not connected</span>';
+    }
+  } catch(e) {
+    document.getElementById('hs-status').innerHTML = '<span style="color:var(--muted)">○ HubSpot unavailable</span>';
+  }
+}
+
+async function manualSync() {
+  const el = document.getElementById('hs-status');
+  el.innerHTML = '<span style="color:var(--muted)">↻ Syncing HubSpot...</span>';
+  try {
+    const res = await fetch('/api/hubspot-sync', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) { showToast('HubSpot synced!', true); loadHubspotContext(); }
+    else showToast('Sync failed');
+  } catch(e) { showToast('Sync error'); }
+}
+
 const CUSTOMERS = [
   "12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba",
   "Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation",
@@ -178,6 +216,7 @@ async function loadFeedback() {
   } catch(e) { allFeedback = []; }
 }
 loadFeedback();
+loadHubspotContext();
 
 function getFeedbackFor(leadName, searchedCompany) {
   return allFeedback.find(f => f.leadName === leadName && f.searchedCompany === searchedCompany) || null;
@@ -212,13 +251,14 @@ async function search(loadMore = false) {
 
   const alreadyFound = currentResults.map(r => r.name);
   const feedbackCtx = buildFeedbackContext();
+  const hsCtx = hubspotContext || '';
 
   // Step 1: Sonnet profiles the company + understands which customers it resembles
   if (!loadMore) updateStep(1);
 
   const profilePrompt = `You are a business analyst. Research this company: "${company}"
 
-Your customer list for reference:
+Your customer list for reference (these are existing customers):
 ${CUSTOMERS.join(', ')}
 
 Task:
@@ -260,7 +300,7 @@ PROFILE OF TARGET:
 - Segment: ${profile.segment}  
 - Key traits: ${profile.key_traits.join('; ')}
 - What to look for: ${profile.what_to_look_for}
-${feedbackCtx}
+${feedbackCtx}${hsCtx}
 ${alreadyFound.length ? 'ALREADY SHOWN (do not repeat): ' + alreadyFound.join(', ') : ''}
 
 Rules:
