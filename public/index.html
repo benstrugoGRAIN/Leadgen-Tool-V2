@@ -290,7 +290,7 @@ function renderResults(profile,leads,isFirst){
         </select>
         <input class="note-input" id="note-${sid}" type="text" placeholder="Add a note..." value="${fb?.note||''}"/>
         <button class="save-btn" onclick="saveNote('${lead.name}','${lead.domain||''}','${sid}')">Save</button>
-        ${lead.domain?`<button class="rating-btn" onclick="window.open('https://${lead.domain}','_blank')">↗</button>`:''}
+        <button class="rating-btn" onclick="window.open('https://www.google.com/search?q='+encodeURIComponent('${lead.name} company'),'_blank')" title="Search on Google">🔍</button>
         <button class="card-chat-toggle" onclick="toggleCardChat('${sid}')">✦ Ask AI</button>
       </div>
       <div class="card-chat" id="card-chat-${sid}">
