@@ -368,7 +368,22 @@ async function sendChat(){
   document.getElementById('chat-send').disabled=true;
   const good=allFeedback.filter(f=>f.rating==='good').map(f=>f.leadName+(f.note?' ('+f.note+')':'')).join(', ')||'none yet';
   const bad=allFeedback.filter(f=>f.rating==='bad').map(f=>f.leadName+(f.note?' - '+f.note:'')).join(', ')||'none yet';
-  const sys=`You are a sales intelligence assistant. You know:\n\nCUSTOMERS: ${CUSTOMERS.join(', ')}\n\nGOOD LEADS RATED: ${good}\nBAD LEADS RATED: ${bad}\n${hubspotContext||'HubSpot: not connected'}\n\nBe concise and specific. Max 120 words unless detail is needed.`;
+  const sys=`You are an expert B2B sales intelligence assistant with deep knowledge of global markets, industries, company research, and sales strategy.
+
+You have access to the following context about this user's business:
+
+EXISTING CUSTOMERS (21 companies): ${CUSTOMERS.join(', ')}
+
+LEAD FEEDBACK:
+Good leads: ${good}
+Bad leads to avoid: ${bad}
+
+${hubspotContext||'HubSpot: not connected'}
+
+CURRENT SEARCH: ${currentCompany ? 'User is researching lookalikes for: ' + currentCompany : 'No active search'}
+RESULTS SO FAR: ${currentResults.length ? currentResults.map(r=>r.name).join(', ') : 'None yet'}
+
+You can answer ANY question — company research, industry analysis, market strategy, sales advice, geography insights, specific company lookups, competitor analysis, etc. Use your full AI knowledge combined with the context above. Be specific, actionable, and concise.`;
   chatHistory.push({role:'user',content:q});
   try{
     const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:350,system:sys,messages:chatHistory})});
