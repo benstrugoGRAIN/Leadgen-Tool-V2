@@ -307,8 +307,14 @@ async function doSearch(loadMore=false){
     // Step 2: Haiku finds lookalikes
     const fbCtx=buildFeedbackCtx();
   const partnerCtx = PARTNER_CONTEXT || '';
-    const lookalikesPrompt=`Find 8 real lookalike companies to "${profile.name}".\n\nPROFILE:\n- ${profile.description}\n- Segment: ${profile.segment}\n- Key traits: ${profile.key_traits.join('; ')}\n- Look for: ${profile.what_to_look_for}\n${fbCtx}${partnerCtx}\n${hubspotContext}${alreadyFound.length?'\nDo NOT repeat: '+alreadyFound.join(', '):''}\n\nRules: real companies only, growth-stage/mid-market, not "${profile.name}" itself.\n\nFIT SCORE GUIDE (be realistic and varied, do not cluster scores):\n- 90-99: Nearly identical business model, same segment, same size, same cross-border profile\n- 75-89: Very similar model with minor differences in geography or size\n- 60-74: Same broad category but meaningful differences\n- 45-59: Relevant but weaker match\n\nReturn ONLY valid JSON array:\n[{"name":"","domain":"","hq":"City, Country","why_similar":"2 sentences specifically how they match the profile traits","fit_score":75}]`;
-    const r2=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:lookalikesPrompt}]})});
+    const lookalikesPrompt=`Find 8 real lookalike companies to "${profile.name}".\n\nPROFILE:\n- ${profile.description}\n- Segment: ${profile.segment}\n- Key traits: ${profile.key_traits.join('; ')}\n- Look for: ${profile.what_to_look_for}\n${fbCtx}${partnerCtx}\n${hubspotContext}${alreadyFound.length?'\nDo NOT repeat: '+alreadyFound.join(', '):''}\n\nRules:
+- ONLY include companies you are CERTAIN exist and have a real, verifiable web presence
+- If you are not confident a company exists, do NOT include it — omit it entirely
+- No fictional, merged, rebranded, or defunct companies
+- Growth-stage or mid-market only — no household giants
+- Do NOT include "${profile.name}" itself
+- Prefer well-known companies in their niche over obscure ones you are less sure about\n\nFIT SCORE GUIDE (be realistic and varied, do not cluster scores):\n- 90-99: Nearly identical business model, same segment, same size, same cross-border profile\n- 75-89: Very similar model with minor differences in geography or size\n- 60-74: Same broad category but meaningful differences\n- 45-59: Relevant but weaker match\n\nReturn ONLY valid JSON array:\n[{"name":"","domain":"","hq":"City, Country","why_similar":"2 sentences specifically how they match the profile traits","fit_score":75}]`;
+    const r2=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:2000,messages:[{role:'user',content:lookalikesPrompt}]})});
     const d2=await r2.json();
     const text2=(d2.content||[]).find(b=>b.type==='text')?.text||'';
     const newLeads=parseJSON(text2);
@@ -481,7 +487,7 @@ RESULTS SO FAR: ${currentResults.length ? currentResults.map(r=>r.name).join(', 
 You can answer ANY question — company research, industry analysis, market strategy, sales advice, geography insights, specific company lookups, competitor analysis, etc. Use your full AI knowledge combined with the context above. Be specific, actionable, and concise.`;
   chatHistory.push({role:'user',content:q});
   try{
-    const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:350,system:sys,messages:chatHistory})});
+    const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:400,system:sys,messages:chatHistory})});
     const d=await r.json();
     const reply=(d.content||[]).find(b=>b.type==='text')?.text||'Sorry, no response.';
     chatHistory.push({role:'assistant',content:reply});
@@ -556,7 +562,7 @@ Answer the user's question about ${lead.name} specifically. Use your full AI kno
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 400,
         system: sys,
         messages: cardChatHistory[sid]
