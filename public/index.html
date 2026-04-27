@@ -149,6 +149,18 @@ header{margin-bottom:40px}
     <div id="partner-chips" style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto"></div>
   </div>
 
+  <!-- Search feedback box (shown after results) -->
+  <div id="search-feedback-box" style="display:none;margin-bottom:24px">
+    <div style="background:#EEF2FF;border:1px solid rgba(75,110,245,0.2);border-radius:12px;padding:16px 20px">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#4B6EF5;margin-bottom:10px">Feedback on these results</div>
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <textarea id="search-feedback-input" placeholder="e.g. Too many payment companies, focus more on travel wholesalers. Avoid enterprise companies..." style="flex:1;padding:10px 12px;font-size:13px;border:1px solid rgba(75,110,245,0.2);border-radius:8px;background:#fff;color:#111;font-family:'DM Sans',sans-serif;outline:none;resize:none;height:64px;line-height:1.5"></textarea>
+        <button onclick="saveSearchFeedback()" style="padding:10px 16px;background:#4B6EF5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;flex-shrink:0">Save feedback</button>
+      </div>
+      <div id="search-feedback-saved" style="font-size:12px;color:#4B6EF5;margin-top:6px;display:none">✓ Feedback saved — will shape future searches</div>
+    </div>
+  </div>
+
   <div id="results"></div>
 </div>
 
@@ -277,9 +289,11 @@ function buildFeedbackCtx(){
   if(!allFeedback.length)return'';
   const good=allFeedback.filter(f=>f.rating==='good').map(f=>f.leadName+(f.note?' ('+f.note+')':''));
   const bad=allFeedback.filter(f=>f.rating==='bad').map(f=>f.leadName+(f.note?' because: '+f.note:''));
+  const searchFb=allFeedback.filter(f=>f.rating==='search_feedback'&&f.note);
   let ctx='';
   if(good.length)ctx+='\nPreviously rated GOOD leads: '+good.join(', ')+'\n';
   if(bad.length)ctx+='\nPreviously rated BAD leads (avoid similar): '+bad.join(', ')+'\n';
+  if(searchFb.length)ctx+='\nPAST SEARCH FEEDBACK (follow these instructions carefully):\n'+searchFb.map(f=>'- When searching for "'+f.searchedCompany+'": '+f.note).join('\n')+'\n';
   return ctx;
 }
 
@@ -289,7 +303,7 @@ async function doSearch(loadMore=false){
   currentCompany=company;
   const btn=document.getElementById('search-btn');
   btn.disabled=true;
-  if(!loadMore){currentResults=[];showLoading(company);}
+  if(!loadMore){currentResults=[];showLoading(company);document.getElementById('search-feedback-box').style.display='none';}
   else{const lm=document.getElementById('lm-btn');if(lm){lm.disabled=true;lm.textContent='Loading...';}}
 
   const alreadyFound=currentResults.map(r=>r.name);
@@ -321,6 +335,7 @@ async function doSearch(loadMore=false){
     if(!loadMore)updateStep(3);
     currentResults=loadMore?[...currentResults,...newLeads]:newLeads;
     renderResults(profile,currentResults,!loadMore);
+    if(!loadMore) showSearchFeedbackBox();
   }catch(e){
     document.getElementById('results').innerHTML=`<div style="color:var(--danger);padding:16px;font-size:13px">Error: ${e.message}</div>`;
   }finally{
@@ -714,6 +729,45 @@ function searchFromModal() {
   closeCustomerModal();
   document.getElementById('search-input').value = modalCustomer;
   doSearch();
+}
+
+
+function showSearchFeedbackBox() {
+  const box = document.getElementById('search-feedback-box');
+  const input = document.getElementById('search-feedback-input');
+  const saved = document.getElementById('search-feedback-saved');
+  box.style.display = 'block';
+  saved.style.display = 'none';
+  // Pre-fill with any existing feedback for this search
+  const existing = allFeedback.find(f => f.leadName === '__search__' && f.searchedCompany === currentCompany);
+  input.value = existing?.note || '';
+}
+
+async function saveSearchFeedback() {
+  const note = document.getElementById('search-feedback-input').value.trim();
+  if (!note) return;
+  try {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        leadName: '__search__',
+        domain: '',
+        searchedCompany: currentCompany,
+        rating: 'search_feedback',
+        note,
+        status: 'feedback'
+      })
+    });
+    // Update local feedback
+    const idx = allFeedback.findIndex(f => f.leadName === '__search__' && f.searchedCompany === currentCompany);
+    const entry = { leadName: '__search__', domain: '', searchedCompany: currentCompany, rating: 'search_feedback', note, status: 'feedback' };
+    if (idx > -1) allFeedback[idx] = entry; else allFeedback.push(entry);
+    document.getElementById('search-feedback-saved').style.display = 'block';
+    showToast('Search feedback saved', true);
+  } catch(e) {
+    showToast('Error saving feedback');
+  }
 }
 
 let toastTimer;
