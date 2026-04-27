@@ -149,15 +149,18 @@ header{margin-bottom:40px}
     <div id="partner-chips" style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto"></div>
   </div>
 
-  <!-- Search feedback box (shown after results) -->
+  <!-- Search feedback box (conversational) -->
   <div id="search-feedback-box" style="display:none;margin-bottom:24px">
-    <div style="background:#EEF2FF;border:1px solid rgba(75,110,245,0.2);border-radius:12px;padding:16px 20px">
-      <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#4B6EF5;margin-bottom:10px">Feedback on these results</div>
-      <div style="display:flex;gap:8px;align-items:flex-start">
-        <textarea id="search-feedback-input" placeholder="e.g. Too many payment companies, focus more on travel wholesalers. Avoid enterprise companies..." style="flex:1;padding:10px 12px;font-size:13px;border:1px solid rgba(75,110,245,0.2);border-radius:8px;background:#fff;color:#111;font-family:'DM Sans',sans-serif;outline:none;resize:none;height:64px;line-height:1.5"></textarea>
-        <button onclick="saveSearchFeedback()" style="padding:10px 16px;background:#4B6EF5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;flex-shrink:0">Save feedback</button>
+    <div style="background:#EEF2FF;border:1px solid rgba(75,110,245,0.2);border-radius:12px;overflow:hidden">
+      <div style="padding:12px 18px;border-bottom:1px solid rgba(75,110,245,0.1);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#4B6EF5">Search feedback</div>
+        <div style="font-size:11px;color:#888;font-family:'DM Mono',monospace">Shapes future searches for this company</div>
       </div>
-      <div id="search-feedback-saved" style="font-size:12px;color:#4B6EF5;margin-top:6px;display:none">✓ Feedback saved — will shape future searches</div>
+      <div id="sfb-messages" style="padding:12px 18px;display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto"></div>
+      <div style="padding:10px 14px;border-top:1px solid rgba(75,110,245,0.1);display:flex;gap:8px">
+        <textarea id="search-feedback-input" placeholder="Tell me what to improve — e.g. too many payment companies, focus on travel wholesalers..." style="flex:1;padding:9px 12px;font-size:13px;border:1px solid rgba(75,110,245,0.2);border-radius:8px;background:#fff;color:#111;font-family:'DM Sans',sans-serif;outline:none;resize:none;height:56px;line-height:1.5" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSearchFeedback();}"></textarea>
+        <button onclick="sendSearchFeedback()" id="sfb-send-btn" style="padding:10px 16px;background:#4B6EF5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;flex-shrink:0;align-self:flex-end">Send</button>
+      </div>
     </div>
   </div>
 
@@ -252,7 +255,7 @@ const PARTNER_CONTEXT = "KNOWN PARTNER ECOSYSTEM (real companies transacting wit
 document.getElementById('customer-chips').innerHTML=CUSTOMERS.map(c=>{
   const hasFX = CUSTOMER_PROFILES[c] && CUSTOMER_PROFILES[c].fx_signals && CUSTOMER_PROFILES[c].fx_signals.length > 0;
   const badge = hasFX ? `<span style="display:inline-block;background:#4B6EF5;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:20px;margin-left:5px;font-family:'DM Mono',monospace;vertical-align:middle;letter-spacing:.03em">FX</span>` : '';
-  return `<span class="customer-chip" onclick="openCustomerModal('${c}')">${c}${badge}</span>`;
+  return `<span class="customer-chip" onclick="openCustomerModal(this)" data-name="${c.replace(/"/g,'&quot;')}">${c}${badge}</span>`;
 }).join('');
 document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
@@ -285,15 +288,26 @@ async function manualSync(){
 
 function useCustomer(name){document.getElementById('search-input').value=name;}
 
-function buildFeedbackCtx(){
+function buildFeedbackCtx(forCompany){
   if(!allFeedback.length)return'';
   const good=allFeedback.filter(f=>f.rating==='good').map(f=>f.leadName+(f.note?' ('+f.note+')':''));
   const bad=allFeedback.filter(f=>f.rating==='bad').map(f=>f.leadName+(f.note?' because: '+f.note:''));
-  const searchFb=allFeedback.filter(f=>f.rating==='search_feedback'&&f.note);
+  
+  // Split feedback into: specific to THIS company vs general
+  const thisCompanyFb = allFeedback.filter(f=>f.rating==='search_feedback' && f.note && f.searchedCompany===forCompany);
+  const otherFb = allFeedback.filter(f=>f.rating==='search_feedback' && f.note && f.searchedCompany!==forCompany);
+  
   let ctx='';
   if(good.length)ctx+='\nPreviously rated GOOD leads: '+good.join(', ')+'\n';
   if(bad.length)ctx+='\nPreviously rated BAD leads (avoid similar): '+bad.join(', ')+'\n';
-  if(searchFb.length)ctx+='\nPAST SEARCH FEEDBACK (follow these instructions carefully):\n'+searchFb.map(f=>'- When searching for "'+f.searchedCompany+'": '+f.note).join('\n')+'\n';
+  
+  if(thisCompanyFb.length){
+    ctx+='\n⚠️ CRITICAL INSTRUCTIONS FOR THIS SPECIFIC SEARCH (you MUST follow these):';
+    ctx+='\n'+thisCompanyFb.map(f=>'- '+f.note).join('\n')+'\n';
+  }
+  if(otherFb.length){
+    ctx+='\nGeneral search feedback from other searches (apply where relevant):\n'+otherFb.map(f=>'- For "'+f.searchedCompany+'": '+f.note).join('\n')+'\n';
+  }
   return ctx;
 }
 
@@ -319,7 +333,7 @@ async function doSearch(loadMore=false){
     if(!loadMore)updateStep(2);
 
     // Step 2: Haiku finds lookalikes
-    const fbCtx=buildFeedbackCtx();
+    const fbCtx=buildFeedbackCtx(company);
   const partnerCtx = PARTNER_CONTEXT || '';
     const lookalikesPrompt=`Find 8 real lookalike companies to "${profile.name}".\n\nPROFILE:\n- ${profile.description}\n- Segment: ${profile.segment}\n- Key traits: ${profile.key_traits.join('; ')}\n- Look for: ${profile.what_to_look_for}\n${fbCtx}${partnerCtx}\n${hubspotContext}${alreadyFound.length?'\nDo NOT repeat: '+alreadyFound.join(', '):''}\n\nRules:
 - ONLY include companies you are CERTAIN exist and have a real, verifiable web presence
@@ -371,8 +385,8 @@ function renderResults(profile,leads,isFirst){
       <div class="rc-why">${lead.why_similar||''}</div>
       <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
       <div class="feedback-row">
-        <button class="rating-btn good ${goodCls}" data-lead='${JSON.stringify(lead).replace(/'/g,"&#39;")}' onclick="rate(this,'good')">👍 Good</button>
-        <button class="rating-btn bad ${badCls}" data-lead='${JSON.stringify(lead).replace(/'/g,"&#39;")}' onclick="rate(this,'bad')">👎 Bad</button>
+        <button class="rating-btn good ${goodCls}" data-idx="${sorted.indexOf(lead)}" onclick="rate(this,'good')">👍 Good</button>
+        <button class="rating-btn bad ${badCls}" data-idx="${sorted.indexOf(lead)}" onclick="rate(this,'bad')">👎 Bad</button>
         <select class="status-select" onchange="saveStatus('${lead.name}',this.value)">
           <option value="new" ${(fb?.status||'new')==='new'?'selected':''}>New</option>
           <option value="contacted" ${fb?.status==='contacted'?'selected':''}>Contacted</option>
@@ -384,13 +398,13 @@ function renderResults(profile,leads,isFirst){
         <button class="rating-btn" onclick="window.open('https://www.google.com/search?q='+encodeURIComponent('${lead.name} company'),'_blank')" title="Search on Google">🔍</button>
         <button class="card-chat-toggle" onclick="toggleCardChat('${sid}')">✦ Ask AI</button>
       </div>
-      <div class="card-chat" id="card-chat-${sid}">
+      <div class="card-chat" id="card-chat-${sid}" data-idx="${sorted.indexOf(lead)}">
         <div class="card-chat-msgs" id="card-chat-msgs-${sid}"></div>
         <div class="card-chat-input-row">
           <input class="card-chat-input" id="card-chat-input-${sid}" type="text" placeholder="Ask about ${lead.name}..." 
-            onkeydown="if(event.key==='Enter')sendCardChat('${sid}',${JSON.stringify(lead).replace(/'/g,"&#39;").replace(/"/g,'&quot;')})"/>
+            onkeydown="if(event.key==='Enter')sendCardChatBySid('${sid}')"/>
           <button class="card-ask-btn" id="card-ask-btn-${sid}" 
-            onclick="sendCardChat('${sid}',${JSON.stringify(lead).replace(/'/g,"&#39;").replace(/"/g,'&quot;')})">Ask</button>
+            onclick="sendCardChatBySid('${sid}')">Ask</button>
         </div>
       </div>
     </div>`;
@@ -400,7 +414,9 @@ function renderResults(profile,leads,isFirst){
 }
 
 async function rate(btn,rating){
-  const lead=JSON.parse(btn.dataset.lead.replace(/&#39;/g,"'"));
+  const idx=parseInt(btn.dataset.idx);
+  const lead=currentResults[idx]||[...currentResults].sort((a,b)=>b.fit_score-a.fit_score)[idx];
+  if(!lead)return;
   const sid=lead.name.replace(/[^a-z0-9]/gi,'-');
   const note=document.getElementById('note-'+sid)?.value||'';
   const status=document.querySelector(`#card-${sid} .status-select`)?.value||'new';
@@ -531,6 +547,14 @@ function toggleCardChat(sid) {
   }
 }
 
+function sendCardChatBySid(sid) {
+  const chatEl = document.getElementById('card-chat-' + sid);
+  const idx = parseInt(chatEl.dataset.idx);
+  const sorted = [...currentResults].sort((a,b)=>b.fit_score-a.fit_score);
+  const lead = sorted[idx];
+  if (lead) sendCardChat(sid, lead);
+}
+
 async function sendCardChat(sid, lead) {
   const input = document.getElementById('card-chat-input-' + sid);
   const q = input.value.trim();
@@ -623,10 +647,11 @@ function renderPartners() {
   }
   
   const el = document.getElementById('partner-chips');
-  el.innerHTML = companies.slice(0, 150).map(c => {
+  el.innerHTML = companies.slice(0, 150).map((c,i) => {
     const val = c.value > 0 ? ` · $${(c.value/1000).toFixed(0)}k` : '';
-    const via = c.via && c.via.length ? ` via ${c.via[0]}` : '';
-    return `<span class="customer-chip" style="font-size:12px" onclick="document.getElementById('search-input').value='${c.name.replace(/'/g,"\\'")}'" title="${c.name}${via}${val}">${c.name}${val ? `<span style="color:var(--accent);margin-left:4px;font-size:10px">${val}</span>` : ''}</span>`;
+    const safeName = c.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const displayVal = val ? `<span style="color:var(--accent);margin-left:4px;font-size:10px">${val}</span>` : '';
+    return `<span class="customer-chip" style="font-size:12px" onclick="setSearchVal(this)" data-name="${c.name.replace(/"/g,'&quot;')}">${c.name}${displayVal}</span>`;
   }).join('');
 }
 
@@ -635,7 +660,8 @@ document.getElementById('partner-search').addEventListener('input', renderPartne
 
 let modalCustomer = '';
 
-function openCustomerModal(name) {
+function openCustomerModal(elOrName) {
+  const name = typeof elOrName === 'string' ? elOrName : elOrName.dataset.name;
   modalCustomer = name;
   const profile = CUSTOMER_PROFILES[name];
   
@@ -725,6 +751,10 @@ function closeCustomerModal() {
   document.getElementById('customer-modal').style.display = 'none';
 }
 
+function setSearchVal(el) {
+  document.getElementById('search-input').value = el.dataset.name;
+}
+
 function searchFromModal() {
   closeCustomerModal();
   document.getElementById('search-input').value = modalCustomer;
@@ -732,26 +762,65 @@ function searchFromModal() {
 }
 
 
+let sfbHistory = [];
+
 function showSearchFeedbackBox() {
   const box = document.getElementById('search-feedback-box');
-  const input = document.getElementById('search-feedback-input');
-  const saved = document.getElementById('search-feedback-saved');
   box.style.display = 'block';
-  saved.style.display = 'none';
-  // Pre-fill with any existing feedback for this search
-  const existing = allFeedback.find(f => f.leadName === '__search__' && f.searchedCompany === currentCompany);
-  input.value = existing?.note || '';
+  sfbHistory = [];
+  const msgs = document.getElementById('sfb-messages');
+  // Check for existing feedback
+  const existing = allFeedback.filter(f => f.rating === 'search_feedback' && f.searchedCompany === currentCompany);
+  if (existing.length) {
+    msgs.innerHTML = '';
+    existing.forEach(f => {
+      appendSFBMsg('user', f.note);
+    });
+    appendSFBMsg('ai', `I have ${existing.length} piece(s) of feedback saved for "${currentCompany}". I'll apply them next time you search. Add more feedback or refine what I should focus on.`);
+  } else {
+    msgs.innerHTML = '';
+    appendSFBMsg('ai', `How were these results for "${currentCompany}"? Tell me what to improve — what to focus on more, what to avoid, or any patterns you noticed.`);
+  }
 }
 
-async function saveSearchFeedback() {
-  const note = document.getElementById('search-feedback-input').value.trim();
+function appendSFBMsg(role, text) {
+  const msgs = document.getElementById('sfb-messages');
+  const div = document.createElement('div');
+  div.style.cssText = `display:flex;justify-content:${role==='user'?'flex-end':'flex-start'}`;
+  div.innerHTML = `<div style="max-width:85%;font-size:13px;line-height:1.55;padding:8px 12px;border-radius:${role==='user'?'10px 2px 10px 10px':'2px 10px 10px 10px'};background:${role==='user'?'#4B6EF5':'#fff'};color:${role==='user'?'#fff':'#333'};border:1px solid ${role==='user'?'transparent':'rgba(75,110,245,0.15)'}">${text.replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendSFBThinking() {
+  const msgs = document.getElementById('sfb-messages');
+  const div = document.createElement('div');
+  div.id = 'sfb-thinking';
+  div.style.cssText = 'display:flex;justify-content:flex-start';
+  div.innerHTML = `<div style="font-size:12px;color:#888;font-family:'DM Mono',monospace;padding:6px 0;animation:pulse 1s ease-in-out infinite alternate">Thinking...</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendSearchFeedback() {
+  const input = document.getElementById('search-feedback-input');
+  const note = input.value.trim();
   if (!note) return;
+  input.value = '';
+  const btn = document.getElementById('sfb-send-btn');
+  btn.disabled = true;
+
+  appendSFBMsg('user', note);
+  appendSFBThinking();
+  sfbHistory.push({ role: 'user', content: note });
+
+  // Save feedback to DB
   try {
     await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        leadName: '__search__',
+        leadName: '__search__' + Date.now(),
         domain: '',
         searchedCompany: currentCompany,
         rating: 'search_feedback',
@@ -759,14 +828,47 @@ async function saveSearchFeedback() {
         status: 'feedback'
       })
     });
-    // Update local feedback
-    const idx = allFeedback.findIndex(f => f.leadName === '__search__' && f.searchedCompany === currentCompany);
-    const entry = { leadName: '__search__', domain: '', searchedCompany: currentCompany, rating: 'search_feedback', note, status: 'feedback' };
-    if (idx > -1) allFeedback[idx] = entry; else allFeedback.push(entry);
-    document.getElementById('search-feedback-saved').style.display = 'block';
-    showToast('Search feedback saved', true);
+    const entry = { leadName: '__search__', domain: '', searchedCompany: currentCompany, rating: 'search_feedback', note, status: 'feedback', savedAt: new Date().toISOString() };
+    allFeedback.push(entry);
+  } catch(e) {}
+
+  // Get all saved feedback for context
+  const allSFB = allFeedback.filter(f => f.rating === 'search_feedback');
+
+  // AI responds conversationally
+  const sys = `You are a search quality assistant for a B2B lead generation tool. 
+The user just searched for lookalikes of "${currentCompany}" and is giving feedback on the results.
+Current results shown: ${currentResults.map(r=>r.name).join(', ')}
+All feedback saved so far for this search: ${allSFB.map(f=>f.note).join(' | ')}
+
+Respond conversationally in 2-3 sentences:
+1. Acknowledge specifically what they said
+2. Confirm exactly what you'll do differently next time (be specific)
+3. Optionally ask one clarifying question if needed
+
+Be direct and specific. Don't be generic.`;
+
+  try {
+    const r = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 200,
+        system: sys,
+        messages: sfbHistory
+      })
+    });
+    const d = await r.json();
+    const reply = (d.content || []).find(b => b.type === 'text')?.text || 'Got it, saved.';
+    sfbHistory.push({ role: 'assistant', content: reply });
+    document.getElementById('sfb-thinking')?.remove();
+    appendSFBMsg('ai', reply);
   } catch(e) {
-    showToast('Error saving feedback');
+    document.getElementById('sfb-thinking')?.remove();
+    appendSFBMsg('ai', 'Feedback saved. I'll apply it next time.');
+  } finally {
+    btn.disabled = false;
   }
 }
 
