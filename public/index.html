@@ -79,7 +79,7 @@ header{margin-bottom:40px}
 #chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;max-height:340px}
 .msg{display:flex;flex-direction:column}
 .bubble{font-size:14px;line-height:1.6;padding:10px 13px;border-radius:12px;max-width:95%;word-wrap:break-word}
-.bubble.ai{background:#EEF2FF;border:1px solid rgba(75,110,245,0.15);border-radius:4px 12px 12px 12px;color:var(--text)}
+.bubble.ai{background:#EEF2FF;border:1px solid rgba(75,110,245,0.15);border-radius:4px 12px 12px 12px;color:var(--text)}.confidence-high{color:#16a34a;font-size:11px;font-family:"DM Mono",monospace;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.08)}.confidence-medium{color:#d97706;font-size:11px;font-family:"DM Mono",monospace;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.08)}.confidence-low{color:#dc2626;font-size:11px;font-family:"DM Mono",monospace;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,0.08)}
 .bubble.user{background:rgba(75,110,245,0.1);border:1px solid rgba(75,110,245,0.2);border-radius:12px 4px 12px 12px;align-self:flex-end;color:var(--text)}
 .bubble.thinking{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;background:none;border:none;padding:4px 0;animation:pulse 1s ease-in-out infinite alternate}
 .chat-footer{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0}
@@ -240,7 +240,7 @@ header{margin-bottom:40px}
 <div class="toast" id="toast"></div>
 
 <script>
-const CUSTOMERS=["12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba","Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation","American International Executive","Bedsopia","Damisa","Dubai Link","Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo","Weski"];
+const CUSTOMERS=["12GO","Debita","GoGlobal","Juniper Travel","Paximum","Stuba","Peakpoint Global","Pollen","Sokin","Transfermate","Ultimate Jet Vacation","American International Executive","Bedsopia","Damisa","Dubai Link","Innovex Cards","Magellan Payments","Rayna Tours","Travclan","Travelsup","Finmo","Weski","Mize"];
 
 
 const CUSTOMER_PROFILES = {"Go Global Travel": {"total_volume": 815199483, "partner_count": 13035, "top_partners": [["HotelMize Project", 28856835], ["Housearch IT L.L.C XML", 22177510], ["TBO HOLIDAYS B2B WEB", 13116352], ["TBO HOLIDAYS OE", 6405545], ["XML Russian express direct", 5914730], ["STUBA FULL", 5859686], ["OTTILA B2B - GGT", 5145089], ["HOLISTO SAFE DISTRIBUTION", 4506985], ["AZUL VIAGENS OE", 4487542], ["Sunhotels Prebook", 4349058]], "geographies": {"EMEA": 167, "APAC": 48, "Americas": 1401, "Middle East": 125}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume", "Large partner network"]}, "Stuba": {"total_volume": 549490548, "partner_count": 3583, "top_partners": [], "geographies": {}, "fx_signals": ["Multi-currency operations", "High FX volume", "Large partner network"]}, "Mize Direct Customer": {"total_volume": 86844587, "partner_count": 54, "top_partners": [["C100054", 14490218], ["C100120", 10540932], ["C100122", 4048862], ["C100096", 2418629], ["C100046", 2382386], ["C100151", 549761], ["C100087", 365433], ["C100059", 347662], ["C100081", 296479], ["C100068", 295955]], "geographies": {}, "fx_signals": ["Multi-currency operations", "High FX volume"]}, "Bookaway-12GO": {"total_volume": 35437593, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": ["High FX volume"]}, "Mize - Bedbank": {"total_volume": 26611302, "partner_count": 37, "top_partners": [["Go global travel", 9380371], ["HOTELBEDS SPAIN, S.L.U", 4398995], ["STAYFORLONG SL", 353079], ["WebBeds FZ-LLC, LLC", 334217], ["Peakpoint", 250390], ["SOLUCIONES INTEGRALES VACACIONALES SL", 194531], ["Low World Travel, S.L", 185753], ["BEDSOPIA FZCO", 108323], ["Hotelmize", 100733], ["Agoda Company Pte. Ltd.", 98866]], "geographies": {"EMEA": 5, "Middle East": 7}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume"]}, "Travelier": {"total_volume": 13016741, "partner_count": 2, "top_partners": [["Bookaway Topups", 251863]], "geographies": {}, "fx_signals": ["High FX volume"]}, "Bedsopia": {"total_volume": 11338352, "partner_count": 213, "top_partners": [["AURUMTOURS VIA ANIXE", 1449516], ["100002 CUG", 1267814], ["100000 B2B", 799936], ["STAYFORLONG PRIME B2B", 633134], ["STAYFORLONG WEB", 469839], ["AGODA B2B", 367278], ["AGODA MOBILE", 356777], ["BOOKINGAGORA", 258196], ["HOTELMIZE", 227605], ["100002 EXP", 195593]], "geographies": {"EMEA": 3, "APAC": 4, "Middle East": 2}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume", "Large partner network"]}, "Ultimate Jet Vacation": {"total_volume": 6508936, "partner_count": 352, "top_partners": [["Flaminia Chapman", 213825], ["Rebecca Farber", 136496], ["Mallory Shaw", 120907], ["Puja Gogawale", 118686], ["Isla Steinberg", 117278], ["Annie Chambers", 110717], ["Jenna Golden", 110637], ["Jennifer A Anderson", 104569], ["Shelley Taylor", 94794], ["Carole Williams", 86965]], "geographies": {"Middle East": 1}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "High FX volume", "Large partner network"]}, "Dubai Link": {"total_volume": 3900389, "partner_count": 254, "top_partners": [["Hotelston retail", 439224], ["RateHawk\u2013Guru XML", 323196], ["Letsfly", 244188], ["Heytrip", 159901], ["AIC Travel B2B XML", 146984], ["HOTELSTON XML", 139775], ["Travel Destination Online", 133454], ["Peakpoint Travel", 128553], ["Ebooking Center - XML", 80696], ["TONGCHENG - XML", 75458]], "geographies": {"EMEA": 1, "APAC": 3, "Americas": 1, "Middle East": 24}, "fx_signals": ["Multi-currency operations", "Cross-border trade", "International customer base", "High FX volume", "Large partner network"]}, "American Executive International": {"total_volume": 1203878, "partner_count": 79, "top_partners": [["RECORD TOUR OPERATOR", 742347], ["Allbeds", 71166], ["Allbeds Retails", 70195], ["globohotel.mx", 29591], ["JUAN TOSELLI VIAJES", 16532], ["EDUARDO PEZZATI TURISMO", 16490], ["VETURIS -JP", 15037], ["RICALE VIAJES SRL", 13637], ["TRAVEL HOUSE SRL", 11613], ["PriceTravel Holding", 11057]], "geographies": {}, "fx_signals": ["Multi-currency operations", "High FX volume"]}, "Finmo": {"total_volume": 1037541, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": ["High FX volume"]}, "Mobi": {"total_volume": 11000, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": []}, "Fyorin": {"total_volume": 4770, "partner_count": 1, "top_partners": [["PorterPays Limited", 4770]], "geographies": {}, "fx_signals": []}, "Grain Production Dual Hedge Partner": {"total_volume": 642, "partner_count": 1, "top_partners": [["Company1", 642]], "geographies": {}, "fx_signals": []}, "Dolly Card": {"total_volume": 98, "partner_count": 1, "top_partners": [["Dolly Card", 98]], "geographies": {}, "fx_signals": []}, "Sokin": {"total_volume": 58, "partner_count": 1, "top_partners": [], "geographies": {}, "fx_signals": []}, "Xflow": {"total_volume": 10, "partner_count": 1, "top_partners": [["Xflow Payments Inc.", 10]], "geographies": {}, "fx_signals": []}};
@@ -487,11 +487,22 @@ function clearChat(){
   document.getElementById('chat-messages').innerHTML='<div class="msg"><div class="bubble ai">Chat cleared! Ask me anything.</div></div>';
 }
 
+function formatWithConfidence(text) {
+  const confMatch = text.match(/\*\*Confidence: (HIGH|MEDIUM|LOW)[^*]*\*\*/i);
+  if (!confMatch) return text.replace(/\n/g,'<br>');
+  const level = confMatch[1].toUpperCase();
+  const cls = 'confidence-' + level.toLowerCase();
+  const mainText = text.replace(/\*\*Confidence:.*?\*\*/s, '').trim();
+  const confText = confMatch[0].replace(/\*\*/g,'');
+  return mainText.replace(/\n/g,'<br>') + '<div class="' + cls + '">' + confText + '</div>';
+}
+
 function appendMsg(role,text){
   const el=document.getElementById('chat-messages');
   const div=document.createElement('div');
   div.className='msg';
-  div.innerHTML=`<div class="bubble ${role}">${text.replace(/\n/g,'<br>')}</div>`;
+  const formatted = role === 'ai' ? formatWithConfidence(text) : text.replace(/\n/g,'<br>');
+  div.innerHTML=`<div class="bubble ${role}">${formatted}</div>`;
   el.appendChild(div);
   el.scrollTop=el.scrollHeight;
   return div;
@@ -511,7 +522,7 @@ async function sendChat(){
 
 You have access to the following context about this user's business:
 
-EXISTING CUSTOMERS (21 companies): ${CUSTOMERS.join(', ')}
+EXISTING CUSTOMERS (23 companies): ${CUSTOMERS.join(', ')}
 
 LEAD FEEDBACK:
 Good leads: ${good}
@@ -522,14 +533,17 @@ ${hubspotContext||'HubSpot: not connected'}
 CURRENT SEARCH: ${currentCompany ? 'User is researching lookalikes for: ' + currentCompany : 'No active search'}
 RESULTS SO FAR: ${currentResults.length ? currentResults.map(r=>r.name).join(', ') : 'None yet'}
 
-You can answer ANY question — company research, industry analysis, market strategy, sales advice, geography insights, specific company lookups, competitor analysis, etc. Use your full AI knowledge combined with the context above. Be specific, actionable, and concise.`;
+You can answer ANY question — company research, industry analysis, market strategy, sales advice, geography insights, specific company lookups, competitor analysis, etc. Use your full AI knowledge combined with the context above. Be specific, actionable, and concise.
+
+IMPORTANT: At the end of every response, add a confidence line in this exact format:
+**Confidence: [HIGH/MEDIUM/LOW] — [one sentence explaining the basis: e.g. "Based on verified public data" or "Based on extrapolation from similar companies" or "Limited data available, mostly estimated"]**`;
   chatHistory.push({role:'user',content:q});
   try{
     const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:400,system:sys,messages:chatHistory})});
     const d=await r.json();
     const reply=(d.content||[]).find(b=>b.type==='text')?.text||'Sorry, no response.';
     chatHistory.push({role:'assistant',content:reply});
-    thinking.querySelector('.bubble').innerHTML=reply.replace(/\n/g,'<br>');
+    thinking.querySelector('.bubble').innerHTML=formatWithConfidence(reply);
   }catch(e){thinking.querySelector('.bubble').textContent='Error: '+e.message;}
   finally{document.getElementById('chat-send').disabled=false;}
   document.getElementById('chat-messages').scrollTop=9999;
@@ -597,7 +611,9 @@ async function sendCardChat(sid, lead) {
     'Fit score: ' + (lead.fit_score || 'unknown') + '/99',
     'Found when searching lookalikes of: ' + currentCompany,
     'Existing customers: ' + CUSTOMERS.join(', '),
-    'Answer questions about ' + lead.name + ' specifically. Use full AI knowledge for contacts, news, tech stack, FX needs, approach strategy. Be specific and actionable.'
+    'Answer questions about ' + lead.name + ' specifically. Use full AI knowledge for contacts, news, tech stack, FX needs, approach strategy. Be specific and actionable.',
+    'IMPORTANT: End every response with a confidence line in this exact format:',
+    '**Confidence: [HIGH/MEDIUM/LOW] — [one sentence: e.g. "Based on verified public data" or "Based on extrapolation from industry patterns" or "Limited data, mostly estimated"]**'
   ];
   const sys = sysParts.join('\n');
 
@@ -841,7 +857,9 @@ async function sendSearchFeedback() {
   const allSFB = allFeedback.filter(f => f.rating === 'search_feedback');
 
   // AI responds conversationally
-  const sys = `You are a search quality assistant for a B2B lead generation tool. 
+  const sys = `You are a search quality assistant for a B2B lead generation tool. End every response with: **Confidence: [HIGH/MEDIUM/LOW] — [reason]**
+
+You are a search quality assistant for a B2B lead generation tool. 
 The user just searched for lookalikes of "${currentCompany}" and is giving feedback on the results.
 Current results shown: ${currentResults.map(r=>r.name).join(', ')}
 All feedback saved so far for this search: ${allSFB.map(f=>f.note).join(' | ')}
