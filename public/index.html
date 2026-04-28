@@ -488,13 +488,13 @@ function clearChat(){
 }
 
 function formatWithConfidence(text) {
-  const confMatch = text.match(/\*\*Confidence: (HIGH|MEDIUM|LOW)[^*]*\*\*/i);
+  const confMatch = text.match(/\*\*Confidence: (HIGH|MEDIUM|LOW)([^*]*)\*\*/i);
   if (!confMatch) return text.replace(/\n/g,'<br>');
   const level = confMatch[1].toUpperCase();
   const cls = 'confidence-' + level.toLowerCase();
-  const mainText = text.replace(/\*\*Confidence:.*?\*\*/s, '').trim();
-  const confText = confMatch[0].replace(/\*\*/g,'');
-  return mainText.replace(/\n/g,'<br>') + '<div class="' + cls + '">' + confText + '</div>';
+  const confText = 'Confidence: ' + level + confMatch[2];
+  const mainText = text.replace(/\*\*Confidence:.*?\*\*\n?/s, '').trim();
+  return '<div class="' + cls + '">' + confText + '</div><div style="margin-top:6px">' + mainText.replace(/\n/g,'<br>') + '</div>';
 }
 
 function appendMsg(role,text){
@@ -533,10 +533,17 @@ ${hubspotContext||'HubSpot: not connected'}
 CURRENT SEARCH: ${currentCompany ? 'User is researching lookalikes for: ' + currentCompany : 'No active search'}
 RESULTS SO FAR: ${currentResults.length ? currentResults.map(r=>r.name).join(', ') : 'None yet'}
 
-You can answer ANY question — company research, industry analysis, market strategy, sales advice, geography insights, specific company lookups, competitor analysis, etc. Use your full AI knowledge combined with the context above. Be specific, actionable, and concise.
+CRITICAL FORMATTING RULE: You MUST start every response with a confidence indicator on the very first line:
+**Confidence: [HIGH/MEDIUM/LOW] — [one sentence reason]**
 
-IMPORTANT: At the end of every response, add a confidence line in this exact format:
-**Confidence: [HIGH/MEDIUM/LOW] — [one sentence explaining the basis: e.g. "Based on verified public data" or "Based on extrapolation from similar companies" or "Limited data available, mostly estimated"]**`;
+Then a blank line, then your answer.
+
+Examples:
+**Confidence: HIGH — Based on verified public data from company website and news**
+**Confidence: MEDIUM — Based on extrapolation from industry patterns and similar companies**
+**Confidence: LOW — Limited public data available, mostly estimated**
+
+You can answer ANY question — company research, industry analysis, market strategy, sales advice, geography insights, specific company lookups, competitor analysis, etc. Use your full AI knowledge combined with the context above. Be specific, actionable, and concise.`;
   chatHistory.push({role:'user',content:q});
   try{
     const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:400,system:sys,messages:chatHistory})});
@@ -611,9 +618,10 @@ async function sendCardChat(sid, lead) {
     'Fit score: ' + (lead.fit_score || 'unknown') + '/99',
     'Found when searching lookalikes of: ' + currentCompany,
     'Existing customers: ' + CUSTOMERS.join(', '),
-    'Answer questions about ' + lead.name + ' specifically. Use full AI knowledge for contacts, news, tech stack, FX needs, approach strategy. Be specific and actionable.',
-    'IMPORTANT: End every response with a confidence line in this exact format:',
-    '**Confidence: [HIGH/MEDIUM/LOW] — [one sentence: e.g. "Based on verified public data" or "Based on extrapolation from industry patterns" or "Limited data, mostly estimated"]**'
+    'CRITICAL: Start every response with this on the first line:',
+    '**Confidence: [HIGH/MEDIUM/LOW] — [one sentence reason]**',
+    'Then a blank line, then your answer.',
+    'Answer questions about ' + lead.name + ' specifically. Use full AI knowledge for contacts, news, tech stack, FX needs, approach strategy. Be specific and actionable.'
   ];
   const sys = sysParts.join('\n');
 
@@ -623,7 +631,7 @@ async function sendCardChat(sid, lead) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 400,
+        max_tokens: 1000,
         system: sys,
         messages: cardChatHistory[sid]
       })
