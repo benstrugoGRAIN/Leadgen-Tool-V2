@@ -319,9 +319,10 @@ function buildFeedbackCtx(forCompany){
 }
 
 async function doSearch(loadMore=false){
-  const company=document.getElementById('search-input').value.trim();
+  const company=document.getElementById('search-input').value.trim().replace(/\b\w/g, c => c.toUpperCase());
   if(!company){showToast('Enter a company name');return;}
   currentCompany=company;
+  document.getElementById('search-input').value=company;
   const btn=document.getElementById('search-btn');
   btn.disabled=true;
   if(!loadMore){currentResults=[];showLoading(company);document.getElementById('search-feedback-box').style.display='none';}
